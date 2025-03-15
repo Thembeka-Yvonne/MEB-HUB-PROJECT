@@ -1,0 +1,8 @@
+{% extends 'master.html %}
+
+{% block title %}Soshanguve South Schedule{% endblock %}
+
+{% block content}
+
+
+{% endblock %}
