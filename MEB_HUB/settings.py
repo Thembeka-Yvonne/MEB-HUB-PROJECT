@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'meb-hub-database',
         'USER': 'postgres',
         'PASSWORD': 'nhlamulo25',
         'HOST': 'localhost',
