@@ -6,11 +6,17 @@ from login.models import *
 # Create your models here.
 class ScheduleCode(models.Model):
     schedule_code = models.IntegerField(primary_key=True)
+
+    def __str__(self):
+        return f"{self.schedule_code}"
     
 class Bus(models.Model):
     bus_id = models.IntegerField(primary_key=True)
     bus_name = models.CharField(max_length=255,null=False)
     campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.bus_id} {self.bus_name}"
 
 class Bus_schedule(models.Model):
     departure = models.CharField(max_length=255,null=False)
@@ -18,6 +24,9 @@ class Bus_schedule(models.Model):
     departure_time = models.TimeField()
     arrival_time = models.TimeField()
     duration = models.IntegerField()
-    bus_id = models.OneToOneField(Bus,on_delete=models.CASCADE)
+    bus_id = models.ForeignKey(Bus,on_delete=models.CASCADE)
     schedule_code = models.ForeignKey(ScheduleCode,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.schedule_code} {self.departure} to {self.destination}"
     
