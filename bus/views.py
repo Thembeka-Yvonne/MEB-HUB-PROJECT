@@ -1,9 +1,12 @@
 from django.shortcuts import render
-from .models import Bus_schedule
+from .models import Bus_schedule,ScheduleCode
 
-# Create your views here.
+# Create your views here.s
 def home(request):
-    return render(request,"buses/home.html")
+    list = ScheduleCode.objects.all()
+    return render(request,"buses/home.html",{
+        "list": list
+    })
 
 def view_schedule(request,schedule_code):
     list = Bus_schedule.objects.filter(schedule_code=schedule_code)

@@ -6,9 +6,11 @@ from login.models import *
 # Create your models here.
 class ScheduleCode(models.Model):
     schedule_code = models.IntegerField(primary_key=True)
+    campus1 = models.CharField(max_length=100,default="")
+    campus2 = models.CharField(max_length=100,default="")
 
     def __str__(self):
-        return f"{self.schedule_code}"
+        return f"{self.schedule_code} {self.campus1} and {self.campus2}"
     
 class Bus(models.Model):
     bus_id = models.IntegerField(primary_key=True)
