@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-style:'Poppins', sans-serif;
 }
 
 h1{
@@ -22,13 +23,13 @@ table,tr,td,th{
 }
 
 tr th{
-   padding: 18px;
+   padding: 20px;
    background-color: #00bbfb;
    text-transform: uppercase;
 }
 
 tr td{
-    padding: 8px;
+    padding: 10px;
 }
 
 tr:nth-child(even){
