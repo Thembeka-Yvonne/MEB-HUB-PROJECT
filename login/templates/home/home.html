@@ -2,11 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <link rel="stylesheet" href="/static/assets/styles/home.css">
 </head>
 <body>
-    <p>
-        Welcome
-    </p>
+    <nav>
+        <ul class="sidebar">
+            <li onclick="closeSideBar()"><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></a></li>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Logout</a></li>
+        </ul>
+        <ul>
+            <li><a href="#">MEB-HUB</a></li>
+            <li onclick="showSideBar()"><a href="#"><svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#e3e3e3"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg></a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <span>Buses</span>
+        </div>
+        <div class="card">
+            <span>Events</span>
+        </div>
+        <div class="card">
+            <span>Map</span>
+        </div>
+        <div class="card">
+            <span>Profile</span>
+        </div>
+    </div>
+
+    <script>
+        function showSideBar(){
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = 'flex'
+        }
+
+        function closeSideBar(){
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = 'none'
+        }
+    </script>
 </body>
 </html>
