@@ -66,6 +66,7 @@ nav li:first-child{
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
+  transition: 1s ease-in;
 }
 
 .sidebar li{
@@ -102,8 +103,19 @@ nav li:first-child{
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color:  rgba(42, 47, 56, 0.9);;
+  background-color:  rgba(42, 47, 56, 0.9);
   min-height: 230px;
   color: white;
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  text-transform: uppercase;
+}
+
+.container .card span a{
+  color: white;
+  text-decoration: none;
+}
+
+.card:hover{
+  cursor: pointer;
+  background-color:  rgba(30, 33, 39, 0.9);
 }
