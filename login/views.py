@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template import loader
 from django.contrib import messages
-
+from administration.models import Admin_Action
 from .models import Student, RegisteredStudent, Admin
 
 
@@ -33,9 +33,17 @@ def login(request):
                 try:
 
                     admin = Admin.objects.all().get(email=username)
+                    
+                    try:
+                     actions = Admin_Action.objects.all().get(admin_id=admin.admin_id)
+                    except:
+                        actions = []
 
                     if admin.password == password:
-                        return HttpResponse(f"Welcome Administrator {admin.name}")
+                        return render(request,"admin/admin.html",{
+                            "admin": admin,
+                            "actions": actions
+                        })
                     else:
                         messages.error(request, "Inccorect Username / Password!")
                         return redirect("/login")

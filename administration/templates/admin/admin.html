@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin</title>
+  <link rel="stylesheet" href="/static/assets/styles/admin.css">
+</head>
+<body>
+  <div class="side-menu">
+    <div class="brand-name">
+      <h1>MEB-HUB</h1>
+    </div>
+      <ul>
+        <li><img src="/static/assets/images/dashboard (2).png" alt="">&nbsp;<span>Dashbord</span></li>
+        <li><img src="/static/assets/images/profile.png" alt="">&nbsp;<span>Profile</span></li>
+        <li><img src="/static/assets/images/help-web-button.png" alt="">&nbsp;<span>Help</span></li>
+        <li><img src="/static/assets/images/logout.png" alt="">&nbsp;<span>Logout</span></li>
+      </ul>
+  </div>
+  <div class="container">
+    <div class="header">
+      <div class="nav">
+        <div class="welcom-admin">
+          <h3>Welcome Admin</h3>
+        </div>
+        <div class="user">
+          <p>{{ admin.name }} {{ admin.surname }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="cards">
+        <div class="card">
+          <div class="box">
+            <h3><a href="{% url 'campus_menu' %}">Campus</a></h3>
+          </div>
+          <div class="icon-case">
+            <img src="/static/assets/images/campus.png" alt="">
+          </div>
+        </div>
+        <div class="card">
+          <div class="box">
+            <h3><a href="">Buses</a></h3>
+          </div>
+          <div class="icon-case">
+            <img src="/static/assets/images/buses (1).png" alt="">
+          </div>
+        </div>
+        <div class="card">
+          <div class="box">
+            <h3><a href="">Events</a></h3>
+          </div>
+          <div class="icon-case">
+            <img src="/static/assets/images/event.png" alt="">
+          </div>
+        </div>
+      </div>
+      <div class="content-2"> 
+        <div class="recent-actions">
+          <div class="title">
+            <h2>Recent Actions</h2>
+          </div>
+          <table>
+            <tr>
+              <th>Name</th>
+              <th>Operation</th>
+              <th>Date-time</th>
+            </tr>
+            {% for rec in actions %}
+              <tr>
+                <td>{{ admin.name }}</td>
+                <td>{{ rec.action_type }}</td>
+                <td>{{ rec.datetime }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td></td>
+                <td></td>
+                <td 
+                style="color: Green;
+                font-size: 30px;">
+                No action perfomed
+              </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
