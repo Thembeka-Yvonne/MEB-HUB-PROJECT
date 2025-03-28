@@ -25,3 +25,6 @@ def add_campus(request):
       return HttpResponse('Campus id is not unique')
   else:
    return render(request,"admin/campus/add_campus.html")
+
+def events_menu(request):
+  return render(request,"admin/events/events_menu.html")

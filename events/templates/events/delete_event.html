@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Events</title>
+</head>
+<body>
+    <h1>Delete Events</h1>
+    <form action="{% url 'delete_event' %}" method="POST"}>
+        <p>Enter the Event ID</p>
+        <p><input type="number" required name="event_id"></p>
+        <p><input type="submit" value="DELETE"></p>
+    </form>
+</body>
+</html>

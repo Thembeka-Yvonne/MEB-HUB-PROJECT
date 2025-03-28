@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Events</title>
+    <style>
+            .square {
+width: 500px;
+height: 500px;
+border: 2px dashed #aaa;
+display: flex;
+position: relative;
+overflow: hidden;
+border-radius: 10px;
+margin:left;
+}
+
+.square img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: none;
+}
+
+.btn-success-soft {
+color: #28a745;
+background-color: rgba(40, 167, 69, 0.1);
+}
+    </style>
+</head>
+<body>
+    <h1>Update Events</h1>
+    <form action="{% url 'update_event_page' %}" method="POST"}>
+        <table>
+            <tr>
+                <td>Event ID:</td>
+                <td><input type="text" name="date" required></td>
+            </tr>
+            <tr>
+                <td>Update date of the event: (format: DD-MON-YYYY)</td>
+                <td><input type="text" name="date" required></td>
+            </tr>
+            <tr>
+                <td>Update location of the event:</td>
+                <td><input type="text" name="location" required></td>
+            </tr>
+            <tr>
+                <td>Upload image of event below if it has changed:</td>
+            </tr>
+            <tr>
+              <td>
+                  <div class="square " id="imageContainer">
+                    <img id="uploadedImage" alt="Uploaded Image">
+                </div>
+                <!-- Button -->
+                <input type="file" name="eventImage" onchange="previewEventImg()" id="customFile" hidden="">
+                <label class="btn btn-success-soft btn-block" for="customFile">Upload</label>
+    <script>
+                    function previewEventImg() {
+    const file = document.getElementById("customFile").files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = function () {
+      const uploadedImage = document.getElementById("uploadedImage");
+      uploadedImage.src = reader.result;
+      uploadedImage.style.display = "block"; // Show the image
+    }
+
+    if (file) {
+      reader.readAsDataURL(file); // Convert image to data URL
+    }
+  }
+            </script>
+                </td>
+                </tr>
+        </table>
+        <input type="submit" value="UPDATE EVENT">
+    </form>
+
+</body>
+</html>
