@@ -12,17 +12,15 @@ def campus_menu(request):
 
 def add_campus(request):
   if request.method == 'POST':
-    campus_id = request.POST['campus_id']
+    # campus_id = request.POST['campus_id']
     campus_name = request.POST['campus_name']
     campus_loc = request.POST['campus_location']
     
-    if not Campus.objects.all().filter(campus_id=campus_id).exists():
-      campus = Campus(campus_id=campus_id,campus_name=campus_name,location=campus_loc)
-      campus.save()
+    # if not Campus.objects.all().filter(campus_id=campus_id).exists():
+    campus = Campus(campus_name=campus_name,location=campus_loc)
+    campus.save()
       # action = Admin_Action(action_type="Add Campus",admin_id=)
-      return HttpResponseRedirect(redirect_to='add_campus')
-    else:
-      return HttpResponse('Campus id is not unique')
+    return HttpResponseRedirect(redirect_to='add_campus')
   else:
    return render(request,"admin/campus/add_campus.html")
 
