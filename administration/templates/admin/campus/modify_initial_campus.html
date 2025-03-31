@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modify {{ campus.campus_name }}</title>
+</head>
+<body>
+    <h1>Modify {{ campus.campus_name}}</h1>
+    <form action="{% url 'modify_campus' id=campus.campus_id %}" method="POST">
+      {% csrf_token %}
+      <table>
+          <tr>
+            <td>CAMPUS ID:</td>
+            <td><input type="text" name="id" value="{{campus.campus_id}}" disabled/></td>
+          </tr>
+          <tr>
+            <td>CAMPUS NAME:</td>
+            <td><input type="text" name="name" value="{{campus.campus_name}}" /></td>
+          </tr>
+          <tr>
+            <td>CAMPUS LOCATION:</td>
+            <td><input type="text" name="location" value="{{campus.location}}" /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><input type="submit" value="MODIFY CAMPUS"/></td>
+          </tr>
+      </table>
+    </form>
+</body>
+</html>
