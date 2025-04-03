@@ -1,11 +1,16 @@
 from django.shortcuts import render
 from login.models import Campus
+from bus.models import ScheduleCode,Bus_schedule,Bus
 from .models import Admin_Action
 from django.http import HttpResponseRedirect,HttpResponse
+from datetime import datetime,timedelta
+
 
 # Create your views here.
 def admin_home(request):
   return render(request,"admin/admin.html")
+
+#campus functionalilities
 
 def campus_menu(request):
   return render(request,"admin/campus/campus_menu.html")
@@ -73,6 +78,67 @@ def view_all_campuses(request):
     "list": list
   })
 
+
+#bus functionalities
+def bus_menu(request):
+  return render(request,"admin/buses/bus_menu.html")
+
+def add_all_campuses_view(request):
+  list = ScheduleCode.objects.all()
+  return render(request,"admin/buses/add_all_camp.html",{
+    "list": list
+  })
+  
+def add_bus_schedule(request,code):
+  
+  schedule_c = ScheduleCode.objects.all().get(schedule_code=code)
+  bus_list = Bus.objects.all()
+  
+  if request.method == 'POST':
+    
+    bus = Bus.objects.all().get(bus_id=int(request.POST['bus']))
+    start_time = request.POST['start_time']
+    last_time = request.POST['last_time']
+    duration = int(request.POST['duration'])
+      
+    s_time = datetime.strptime(start_time, '%H:%M')
+    l_time = datetime.strptime(last_time, '%H:%M')
+    
+    Bus_schedule.objects.filter(schedule_code=code).delete()
+    
+    n_time = datetime.strptime(start_time, '%H:%M')
+      
+    while n_time < l_time:
+      
+      n_time = s_time + timedelta(hours=duration)
+      
+      bus_s = Bus_schedule(departure=schedule_c.campus1,destination=schedule_c.campus2,
+                             departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
+                             bus_id=bus,schedule_code=schedule_c)
+        
+      bus_s.save()
+        
+      s_time = n_time + timedelta(hours=duration)
+      n_time = s_time + timedelta(hours=duration)
+      
+  
+      bus_s = Bus_schedule(departure=schedule_c.campus2,destination=schedule_c.campus1,
+                        departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
+                        bus_id=bus,schedule_code=schedule_c)
+      bus_s.save()
+        
+      s_time = n_time + timedelta(hours=duration)
+        
+        
+    return HttpResponseRedirect(redirect_to='/administration/bus_menu')
+      
+  else:
+    return render(request,"admin/buses/add_schedule.html",{
+      "schedule": schedule_c,
+      "bus_list": bus_list
+    })
+  
+  
 
 def events_menu(request):
   return render(request,"admin/events/events_menu.html")

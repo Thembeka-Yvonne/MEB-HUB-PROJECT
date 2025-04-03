@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Schedule</title>
+</head>
+<body>
+  <h1>Add Schedule for {{ schedule.campus1 }} and {{ schedule.campus2 }} </h1>
+  <form action="{% url 'add_bus_schedule' code=schedule.schedule_code %}" method="POST">
+    {% csrf_token %}
+    <table>
+      <tr>
+        <td>Schedule code: </td>
+        <td><input type="text" value="{{schedule.schedule_code}}" disabled></td>
+      </tr>
+      <tr>
+        <td>Campus one: </td>
+        <td><input type="text" value="{{schedule.campus1}}" disabled></td>
+      </tr>
+      <tr>
+        <td>Campus two: </td>
+        <td><input type="text" value="{{schedule.campus2}}" disabled></td>
+      </tr>
+      <tr>
+        <td>Bus: </td>
+        <td>
+          <select name="bus">
+            {% for bus in bus_list %}
+              <option value="{{bus.bus_id}}">{{ bus.bus_name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Start travel time: </td>
+        <td><input type="time" name="start_time"></td>
+      </tr>
+      <tr>
+        <td>Last travel time: </td>
+        <td><input type="time" name="last_time"></td>
+      </tr>
+      <tr>
+        <td>Duration difference: </td>
+        <td><input type="number" name="duration"></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="submit" value="GENERATE BUS SCHEDULE"></td>
+      </tr>
+    </table
+  </form>
+</body>
+</html>
