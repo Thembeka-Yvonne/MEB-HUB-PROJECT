@@ -121,6 +121,8 @@ def add_bus_schedule(request,code):
       s_time = n_time + timedelta(hours=duration)
       n_time = s_time + timedelta(hours=duration)
       
+      if n_time > l_time:
+        break
   
       bus_s = Bus_schedule(departure=schedule_c.campus2,destination=schedule_c.campus1,
                         departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
