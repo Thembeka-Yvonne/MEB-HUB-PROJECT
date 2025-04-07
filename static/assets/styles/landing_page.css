@@ -1,0 +1,10 @@
+body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+.container{
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to right, #1286ad, #7fc5dd);
+}
