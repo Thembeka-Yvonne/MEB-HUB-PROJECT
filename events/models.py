@@ -3,7 +3,7 @@ from login.models import  Admin
 
 # Create your models here.
 class Event(models.Model):
-    event_id = models.IntegerField(primary_key=True)
+    event_id = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=1000)
     date = models.DateField()
     image = models.ImageField(upload_to="event_images",null=True)

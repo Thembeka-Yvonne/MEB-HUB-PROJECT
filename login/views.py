@@ -20,7 +20,9 @@ def login(request):
                 try:
                     stud = Student.objects.all().get(studentEmail=username)
                     if stud.password == password:
-                        return render(request,"home/home.html")
+                        return render(request,"home/home.html",{
+                            "email": stud
+                        })
                     else:
                         messages.error(request, "Inccorect Username / Password!")
                         return redirect("/login")
