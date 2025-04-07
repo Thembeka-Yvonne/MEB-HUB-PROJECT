@@ -18,6 +18,7 @@ body{
 }
 
 .card{
+  display: inline-block;
   width: 230px;
   min-height: 200px;
   margin: 20px;

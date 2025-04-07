@@ -6,9 +6,8 @@ from django.db.models import IntegerField, CharField, OneToOneField, ForeignKey
 
 
 # Create your models here.
-
 class Campus(models.Model):
-    campus_id = models.IntegerField(primary_key=True)
+    campus_id = models.BigAutoField(primary_key=True)
     campus_name = models.CharField(max_length=164)
     location = models.CharField(max_length=164)
 

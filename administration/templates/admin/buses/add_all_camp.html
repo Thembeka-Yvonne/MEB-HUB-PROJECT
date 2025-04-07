@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Campuses</title>
+</head>
+<body>
+  <h1>All Campuses</h1>
+  <p>
+    Please click the link below to add bus schedule for the campus:
+  </p>
+  <ol>
+    {%for camp in list %}
+     <li><a href="add_bus_schedule/{{camp.schedule_code}}">{{ camp.campus1 }} and {{ camp.campus2 }}</a></li>
+    {% endfor %}
+  </ol>
+</body>
+</html>
