@@ -24,20 +24,16 @@ def login(request):
 
                 try:
                     stud = Student.objects.all().get(studentEmail=username)
-<<<<<<< HEAD
+                    
                     if stud.password == password:
+                        initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
                         return render(request,"home/home.html",{
-                            "email": stud
+                            "email": stud,
+                            "initials": initials
                         })
                     else:
                         messages.error(request, "Inccorect Username / Password!")
                         return redirect("/login")
-=======
-                    
-                    initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
-                    return render(request, "home/home.html", {"initials": initials})
-                
->>>>>>> 1df20d8929fd77892d6bf41dd1db5ead5b906a65
 
                 except:
                     messages.error(request, "Inccorect Username / Password!")

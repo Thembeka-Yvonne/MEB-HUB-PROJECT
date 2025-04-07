@@ -18,11 +18,10 @@ body{
 }
 
 .card{
-  display: inline-block;
-  width: 230px;
+  width: 250px;
   min-height: 200px;
   margin: 20px;
-  background-color: #001d3d;
+  background-color:  #1caedf;
   border-radius: 12px;
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   font-size: 18px;
