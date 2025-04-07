@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; 
+            color: #333; 
+        }
+
+    
+        nav {
+            background-color: #1286ad; 
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            width: 100%;
+        }
+
+        .nav-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        
+
+        .nav-menu {
+            
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .nav-menu a {
+            display: inline;
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            width: 150px;
+            text-align: center;
+        }
+
+        .nav-menu a:hover {
+            background-color: #555;
+        }
+
+        .profile-button:hover {
+            background-color: #555;
+        }
+
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff; 
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        
+        .content-container {
+            text-align: center;
+        }
+
+        .content-container h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .content-container p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+    
+        .footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+    
+        @media screen and (max-width: 768px) {
+            nav {
+                flex-direction: column;
+            }
+
+            .nav-menu {
+                display: flex;
+                margin-top: 10px;
+            }
+
+            .profile-button {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-title">M.E.B</div>
+        <div class="nav-menu" id="navMenu">
+            <a href="home.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="{% url 'account:logout' %}">Log Out</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-container">
+            <h1>About Us</h1>
+            <p>Welcome to M.E.B, your premier campus companion. We're a team of innovators dedicated to transforming the university experience. Our mission is to provide students with a comprehensive navigation tool that simplifies campus life, fosters connection, and unlocks new opportunities.
+
+                At M.E.B, we believe that university life should be about discovery, growth, and connection – not getting lost on campus or missing out on events. That's why we've created an intuitive, user-friendly app that puts campus life at your fingertips.
+            
+                Our team is passionate about empowering students to make the most of their university experience. We're committed to continuously improving and expanding our platform to meet the evolving needs of our users.
+            
+                Join the M.E.B community today and start navigating your campus with confidence!</p>
+        </div>
+    </div>
+
+    <footer class="footer">&copy; 2025 M.E.B. All Rights Reserved.</footer>
+
+    
+</body>
+</html>

@@ -16,16 +16,16 @@ class Campus(models.Model):
         return f"{self.campus_id} {self.campus_name} {self.location}"
 
 class Student(models.Model):
-      studentNumber = models.CharField(max_length=20, primary_key=True)
-      name = models.CharField(max_length=100,default="")
-      surname = models.CharField(max_length=100,default="")
-      studentEmail = models.CharField(max_length=150)
-      password = models.CharField(max_length=150)
-      stud_card_image = models.ImageField(upload_to='images',null=True)
-      campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
+        studentNumber = models.CharField(max_length=20, primary_key=True)
+        name = models.CharField(max_length=100,default="")
+        surname = models.CharField(max_length=100,default="")
+        studentEmail = models.CharField(max_length=150)
+        password = models.CharField(max_length=150)
+        stud_card_image = models.ImageField(upload_to='images',null=True)
+        campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
 
-      def __str__(self):
-          return f"{self.studentNumber} {self.name} {self.surname}"
+def __str__(self):
+        return f"{self.studentNumber} {self.name} {self.surname}"
 
 
 class RegisteredStudent(models.Model):
@@ -33,7 +33,7 @@ class RegisteredStudent(models.Model):
     campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
 
     def __str__(self):
-       return f"{self.studentNumber} {self.campus_id}"
+        return f"{self.studentNumber} {self.campus_id}"
 
 class Admin(models.Model):
     admin_id = IntegerField(primary_key=True)

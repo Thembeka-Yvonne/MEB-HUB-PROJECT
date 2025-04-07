@@ -1,0 +1,155 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Navigator</title>
+    <style>
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: white;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        nav {
+            background-color: #1286ad;
+            padding: 15px;
+            text-align: center;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        nav ul li a:hover {
+            color: #f0f0f0;
+        }
+        
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background-image: url("{% static 'assets/images/tut3.jpg' %}");
+            background-position: center;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .hero-content {
+            position: relative;
+            text-align: center;
+            color: white;
+            z-index: 1;
+        }
+        .hero-content h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: fadeIn 2s ease-out;
+        }
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            animation: fadeIn 2s ease-out 0.5s;
+        }
+        .hero-content .btn {
+            padding: 15px 25px;
+            background-color: #1286ad;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 0 10px;
+            animation: fadeIn 2s ease-out 1s;
+        }
+        .hero-content .btn:hover {
+            background-color: #03242f;
+        }
+        
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            .hero-content p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            <li><a href="{% url 'account:about' %}">About Us</a></li>
+            <li><a href="{% url 'account:contact' %}">Contact Us</a></li>
+            <li><a href="">Features</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Image Section -->
+    <div class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Welcome to M.E.B</h1>
+            <p>Your ultimate campus companion!</p>
+            <a href="{%url 'account:register' %}"><button class="btn">Sign up</button></a>
+            <a href="{%url 'account:login' %}"><button class="btn">Log In</button></a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 M.E.B. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
