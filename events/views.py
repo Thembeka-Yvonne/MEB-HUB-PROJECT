@@ -142,4 +142,5 @@ def events_home(request):
 def rsvp_event(request):
     eventID=request.GET.get("eventID")
     event=Event.objects.get(event_id=eventID)
+
     return render(request,'events/rsvp_event.html',{'event':event})

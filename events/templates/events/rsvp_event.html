@@ -38,8 +38,8 @@ background-color: rgba(40, 167, 69, 0.1);
     </style>
 </head>
 <body>
-    <h1>Add Event</h1>
-    <form action="{% url 'account:rsvp_event' %}" method="POST"}>
+    <h1>RSVP Event</h1>
+    <form action="{% url 'rsvp_event' %}eventID={{event.event_id}}" method="POST"}>
         {% csrf_token %}
         <table>
             <tr>
