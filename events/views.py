@@ -138,3 +138,8 @@ def events_home(request):
     events= Event.objects.filter(admin_id__in=admin_ids)
     events=events.order_by('date')
     return render(request, 'events/events_home.html',{'events':events})
+
+def rsvp_event(request):
+    eventID=request.GET.get("eventID")
+    event=Event.objects.get(event_id=eventID)
+    return render(request,'events/rsvp_event.html',{'event':event})

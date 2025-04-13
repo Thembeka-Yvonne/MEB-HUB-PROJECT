@@ -1,10 +1,61 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
+{% for message in messages %}
+            <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+                {{message}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+{% endfor %}
 <head>
     <meta charset="UTF-8">
-    <title>RSVP Events</title>
+    <title>Add Event</title>
+    <style>
+
+        .square {
+width: 500px;
+height: 500px;
+border: 2px dashed #aaa;
+display: flex;
+position: relative;
+overflow: hidden;
+border-radius: 10px;
+margin:left;
+}
+
+.square img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: none;
+}
+
+.btn-success-soft {
+color: #28a745;
+background-color: rgba(40, 167, 69, 0.1);
+}
+
+    </style>
 </head>
 <body>
-
+    <h1>Add Event</h1>
+    <form action="{% url 'account:rsvp_event' %}" method="POST"}>
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>Enter your name: </td>
+                <td><input type="text" name="date" required></td>
+            </tr>
+            <tr>
+                <td>Enter your surname: </td>
+                <td><input type="text" name="surname" required></td>
+            </tr>
+            <tr>
+                <td>Enter personal email surname: </td>
+                <td><input type="text" name="persEmail" required></td>
+            </tr>
+        </table>
+         <button type="submit">RSVP EVENT</button>
+    </form>
 </body>
 </html>

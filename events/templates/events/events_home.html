@@ -18,6 +18,7 @@
                 <p><b>{{ event.description }}</b></p>
                 <p>Date: {{ event.date}}</p>
                 <p>Location: {{ event.location }}</p>
+                <p><a href="{% url 'account:rsvp_event' %}?eventID={{event.event_id}}">Click here to RSVP the event</a></p>
                 <hr>
             </li>
         {% empty %}
