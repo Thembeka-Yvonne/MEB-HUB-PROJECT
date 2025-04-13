@@ -110,3 +110,4 @@ def about(request):
     return render(request,'about_us/about_us.html')
 def contact(request):
     return render(request, 'contact_us/contact_us.html')
+
