@@ -111,3 +111,7 @@ def about(request):
 def contact(request):
     return render(request, 'contact_us/contact_us.html')
 
+def update_profile(request):
+    studEmail=request.GET.get("studEmail")
+    student=Student.objects.get(studentEmail=studEmail)
+    return render(request,'home/update_profile.html',{'student':student})

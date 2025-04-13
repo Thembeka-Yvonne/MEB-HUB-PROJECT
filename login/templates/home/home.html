@@ -194,7 +194,7 @@
       <span id="user-initials">{{ initials }}</span>
     </button>
     <div class="nav-menu" id="navMenu">
-      <a href="#"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{% url 'account:update_profile' %}?studEmail={{email.studentEmail}}"><i class="bi bi-person-circle"></i> Profile</a>
       <a href="{% url 'account:about' %}"><i class="bi bi-info-circle-fill"></i> About Us</a>
       <a href="{% url 'account:contact' %}"><i class="bi bi-envelope-fill"></i> Contact Us</a>
       <a href="{% url 'account:logout' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a>
