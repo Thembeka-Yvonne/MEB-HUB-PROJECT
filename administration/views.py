@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from login.models import Campus
+from login.models import Campus, Admin
 from bus.models import ScheduleCode,Bus_schedule,Bus
 from .models import Admin_Action
 from django.http import HttpResponseRedirect,HttpResponse
@@ -142,5 +142,9 @@ def add_bus_schedule(request,code):
   
   
 
+
 def events_menu(request):
-  return render(request,"admin/events/events_menu.html")
+  # retrieves the adminEmail from URL (GET) and creates an admin object and passes object to template
+  adminEmail = request.GET.get("adminEmail")
+  admin = Admin.objects.get(email=adminEmail)
+  return render(request, "admin/events/events_menu.html", {'admin': admin})

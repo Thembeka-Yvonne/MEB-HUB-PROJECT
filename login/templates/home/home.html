@@ -208,12 +208,13 @@
         <p>Transform your campus experience: navigate with ease, connect with others, and discover new opportunities!</p>
         <div class="button-container">
             <button class="btn"><a href="{% url 'home' %}">View Schedule</a></button>
-            <button class="btn">View Events</button>
+            <button class="btn"><a href="{% url 'events_home' %}?studEmail={{email.studentEmail}}">View Events</a></button>
             <button class="btn">
               <a href="https://67eff37ee41c8c000867de18--mini-map-campus.netlify.app/">
                 View Map</a>
             </button>
          </div>
+
     </div>
   </div>
 
