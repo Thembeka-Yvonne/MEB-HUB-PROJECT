@@ -36,15 +36,32 @@ background-color: rgba(40, 167, 69, 0.1);
 }
 
     </style>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
+<script src="{% static 'assets/events/index.js' %}"></script>
+<script type="text/javascript">
+   (function(){
+      emailjs.init({
+        publicKey: "Z_pc7v6DVMPtzbMfz",
+      });
+   })();
+</script>
 </head>
 <body>
     <h1>RSVP Event</h1>
-    <form action="{% url 'rsvp_event' %}eventID={{event.event_id}}" method="POST"}>
+    <form action="{% url 'rsvp_event' %}?eventID={{event.event_id}}" method="POST" enctype="multipart/form-data" }>
         {% csrf_token %}
         <table>
+            <input type="text"  name="eventID" value="{{event.event_id}}" hidden="">
+            <input type="text"  name="location" id="location" value="{{event.location}}" hidden="">
+            <input type="text"  name="date" id="date" value="{{event.date}}" hidden="">
+            <input type="text"  name="description" id="description" value="{{event.description}}" hidden="">
+
+
             <tr>
                 <td>Enter your name: </td>
-                <td><input type="text" name="date" required></td>
+                <td><input type="text" name="name" required id="name"></td>
             </tr>
             <tr>
                 <td>Enter your surname: </td>
@@ -52,10 +69,14 @@ background-color: rgba(40, 167, 69, 0.1);
             </tr>
             <tr>
                 <td>Enter personal email surname: </td>
-                <td><input type="text" name="persEmail" required></td>
+                <td><input type="email" name="email" required id="email"></td>
+            </tr>
+            <tr>
+                <td>Enter student number: </td>
+                <td><input type="text" name="studentNo" required id="studNo"></td>
             </tr>
         </table>
-         <button type="submit">RSVP EVENT</button>
+        <button type="submit" onclick="sendMail()">RSVP</button>
     </form>
 </body>
 </html>
