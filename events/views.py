@@ -143,4 +143,15 @@ def rsvp_event(request):
     eventID=request.GET.get("eventID")
     event=Event.objects.get(event_id=eventID)
 
+    if request.method=='POST':
+        event_id = request.POST.get("eventID")
+        event = Event.objects.all().get(event_id=event_id)
+        student_no = request.POST['studentNo']
+        name = request.POST['name']
+        surname = request.POST['surname']
+        persEmail = request.POST['email']
+
+
+
+        return redirect('success')
     return render(request,'events/rsvp_event.html',{'event':event})
