@@ -7,6 +7,7 @@ from .models import Student, RegisteredStudent, Admin
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import redirect
+from django.urls import reverse
 
 
 # Create your views here.
@@ -111,7 +112,26 @@ def about(request):
 def contact(request):
     return render(request, 'contact_us/contact_us.html')
 
+
+
 def update_profile(request):
-    studEmail=request.GET.get("studEmail")
-    student=Student.objects.get(studentEmail=studEmail)
-    return render(request,'home/update_profile.html',{'student':student})
+        studEmail = request.GET.get("studEmail")
+        student = Student.objects.get(studentEmail=studEmail)
+        initials = f"{student.name[0].upper()}{student.surname[0].upper()}"
+
+        if request.method == 'POST':
+            student.name = request.POST.get('name')
+            student.surname = request.POST.get('surname')
+            student.studentNumber = request.POST.get('student_number')
+
+            if 'file' in request.FILES:
+                student.stud_card_image = request.FILES['file']
+
+            student.save()
+            messages.success(request, "Profile updated successfully! 🎉")
+
+            # Redirect with actual student email in query param
+            url = reverse('account:update_profile')
+            return redirect(f'{url}?studEmail={student.studentEmail}')
+
+        return render(request, 'home/update_profile.html', {'student': student, 'initials': initials})
