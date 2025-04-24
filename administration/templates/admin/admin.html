@@ -34,14 +34,6 @@
       <div class="cards">
         <div class="card">
           <div class="box">
-            <h3><a href="{% url 'campus_menu' %}">Campus</a></h3>
-          </div>
-          <div class="icon-case">
-            <img src="/static/assets/images/campus.png" alt="">
-          </div>
-        </div>
-        <div class="card">
-          <div class="box">
             <h3><a href="{% url 'bus_menu' %}">Buses</a></h3>
           </div>
           <div class="icon-case">
@@ -70,7 +62,7 @@
             </tr>
             {% for rec in actions %}
               <tr>
-                <td>{{ admin.name }}</td>
+                <td>{{ rec.admin_id.name }}</td>
                 <td>{{ rec.action_type }}</td>
                 <td>{{ rec.datetime }}</td>
               </tr>

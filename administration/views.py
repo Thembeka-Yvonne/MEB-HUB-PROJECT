@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from login.models import Campus
+from login.models import Campus,Admin
 from bus.models import ScheduleCode,Bus_schedule,Bus
 from .models import Admin_Action
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
-
+from datetime import date
 
 # Create your views here.
 def admin_home(request):
@@ -24,8 +24,11 @@ def add_campus(request):
     # if not Campus.objects.all().filter(campus_id=campus_id).exists():
     campus = Campus(campus_name=campus_name,location=campus_loc)
     campus.save()
-      # action = Admin_Action(action_type="Add Campus",admin_id=)
-    return HttpResponseRedirect(redirect_to='add_campus')
+    admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+    addAction(admin,record_type="Added a campus")
+    
+    return HttpResponseRedirect(redirect_to="/administration/view_all_actions")
+  
   else:
    return render(request,"admin/campus/add_campus.html")
  
@@ -39,6 +42,10 @@ def list_all_campus(request):
 def remove_campus(request,id):
   campus = Campus.objects.all().get(campus_id=id)
   campus.delete()
+  
+  admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+  addAction(admin_id=admin,record_type="Removed a campus")
+  
   return HttpResponseRedirect(redirect_to='/administration/list_all_campus')
   
   
@@ -62,6 +69,8 @@ def modify_campus(request,id):
     campus.location = camp_loc
     
     campus.save()
+    admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+    addAction(admin_id=admin,record_type="Edited campus information")
     
     return HttpResponseRedirect(redirect_to='/administration/modify_list_campus')
   
@@ -131,7 +140,8 @@ def add_bus_schedule(request,code):
         
       s_time = n_time + timedelta(hours=duration)
         
-        
+    admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+    addAction(admin_id=admin,record_type="Generated bus schedule")
     return HttpResponseRedirect(redirect_to='/administration/bus_menu')
       
   else:
@@ -144,3 +154,19 @@ def add_bus_schedule(request,code):
 
 def events_menu(request):
   return render(request,"admin/events/events_menu.html")
+
+def addAction(admin_id: int,record_type: str):
+  action = Admin_Action(action_type=record_type,admin_id=admin_id)
+  action.save()
+  
+
+def view_all_actions(request):
+  
+  action = Admin_Action.objects.all().filter(admin_id=request.session['admin_id'],
+                                             datetime__date = date.today())
+  admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+  
+  return render(request,"admin/admin.html",{
+    "admin": admin,
+    "actions": action
+  })

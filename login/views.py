@@ -7,6 +7,7 @@ from .models import Student, RegisteredStudent, Admin
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import redirect
+from datetime import date
 
 
 # Create your views here.
@@ -45,11 +46,16 @@ def login(request):
                     admin = Admin.objects.all().get(email=username)
                     
                     try:
-                        actions = Admin_Action.objects.all().get(admin_id=admin.admin_id)
+                        actions = Admin_Action.objects.all().filter(admin_id=admin.admin_id,
+                                                                datetime__date = date.today())
                     except:
-                        actions = []
+                        actions = None
 
                     if admin.password == password:
+                        
+                        if "admin_id" not in request.session:
+                            request.session["admin_id"] = admin.admin_id
+                            
                         return render(request,"admin/admin.html",{
                             "admin": admin,
                             "actions": actions
