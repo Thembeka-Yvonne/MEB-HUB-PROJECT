@@ -102,40 +102,14 @@ def update_events(request):
         return redirect(f"{reverse('update_event_page')}?eventID={event.event_id}")
     return render(request, 'admin/events/update_events.html', {'admin': admin,'events':events})
 
-def delete_events(request):
-    #same code as update_events, just in this case you are deleting a certain event
-    adminID = request.GET.get("adminID")
-    admin = Admin.objects.all().get(admin_id=adminID)
-    events = Event.objects.all()
-
-    if request.method == 'POST':
-        event_id = request.POST.get("event_id")
-        event = Event.objects.all().get(event_id=event_id)
-        return redirect(f"{reverse('delete_event_page')}?eventID={event.event_id}")
-    return render(request, 'admin/events/delete_events.html',{'admin': admin,'events':events})
-
-def delete_event_page(request):
-    #Katlego responsible for this part
-    eventID = request.GET.get('eventID')
-    event = Event.objects.get(event_id=eventID)
-
-    if request.method=='POST':
-        eventID = request.POST.get('eventID')
-        event1 = Event.objects.all().get(event_id=eventID)
-        event1.delete()
-        return redirect('success')
-    return render(request, 'admin/events/delete_event_page.html', {'event': event})
 
 def events_home(request):
     Event.objects.filter(date__lt=date.today()).delete() #automatically delete events
     studEmail=request.GET.get("studEmail")
     student=Student.objects.get(studentEmail=studEmail)
-    campusID=student.campus_id
 
-    admins=Admin.objects.filter(campus_id_id=campusID)
-    admin_ids = admins.values_list('admin_id', flat=True)
 
-    events= Event.objects.filter(admin_id__in=admin_ids)
+    events= Event.objects.all()
     events=events.order_by('date')
     return render(request, 'events/events_home.html',{'events':events})
 
