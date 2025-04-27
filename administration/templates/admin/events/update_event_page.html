@@ -58,22 +58,31 @@ background-color: rgba(40, 167, 69, 0.1);
                 <td><input type="text" name="location" required value="{{event.location}}"></td>
             </tr>
             <tr>
+        <td> Update Start time: </td>
+        <td><input type="time" name="start_time"></td>
+      </tr>
+            </tr>
+            <tr>
+        <td>Update End time: </td>
+        <td><input type="time" name="end_time"></td>
+      </tr>
+            <tr>
                 <td>Upload image of event below if it has changed:</td>
             </tr>
-            <!--
+
             <tr>
               <td>
                   <div class="square " id="imageContainer">
                       {% if event.image %}
                       <img id="databaseImage"
                         alt=" Database Image"
-                        src="{{ event.image.url }}"
+                        src="{% url 'serve_image' event.event_id %}"
                         style="width: 100%; height: 100%; object-fit: cover; display: block;">
                       {% else %}
                           <img id="defaultImage" src=" " alt="default" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                       {% endif %}
-                       -->
-                      <!-- Image Preview
+
+                      <!-- Image Preview -->
                       <img id="uploadedImage"
                            alt="Uploaded Image"
                            style="width: 100%; height: 100%; object-fit: cover; display: none;">
