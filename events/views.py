@@ -1,6 +1,7 @@
 import os
+from contextlib import nullcontext
 
-from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpResponseBadRequest, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from administration.templates.admin.events.EventForms import EventForms
@@ -10,7 +11,8 @@ from datetime import datetime, date
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.conf import settings
-
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 
 # Create your views here.
@@ -26,16 +28,34 @@ def add_event(request):
     # We make use of select_related to retrieve the information of a specific Admin object which has
     # campus_id foreign key which points to the Campus model.
 
-    # Uses the EventForms form (Django form) to create an event and if successful, display the success.html page.
-    form = EventForms()
+    # instead of using Django form for the input values of adding events, I manually created the form.  Reason is django form does not serve binary files
     if request.method == 'POST':
-      form = EventForms(request.POST, request.FILES)
-      if form.is_valid():
-        form.save()
+        description = request.POST.get('description')
+        date = request.POST.get('date')
+        location = request.POST.get('location')
+        admin_id = request.POST.get('admin_id')
+        image_file =request.FILES.get('image')
+        start_time = request.POST['start_time']
+        end_time = request.POST['end_time']
+
+        s_time = datetime.strptime(start_time, '%H:%M')
+        e_time = datetime.strptime(end_time, '%H:%M')
+        image_data=image_file.read() #read binary file so it can be stored in the database
+
+        if image_file:
+            event = Event(
+                description=description,
+                date=date,
+                location=location,
+                admin_id_id=admin_id,
+                image=image_data,
+                start_time=s_time.time(),
+                end_time=e_time.time()
+            )
+            event.save()
         return redirect('success')
-      else:
-        print(form.errors)
-    return render(request, 'admin/events/add_event.html', {'form': form, 'admin': admin})
+
+    return render(request, 'admin/events/add_event.html', { 'admin': admin})
 
 
 def success(request):
@@ -53,24 +73,32 @@ def update_event_page(request):
             location = request.POST.get("location")
             description=request.POST.get("description")
 
+            start_time = request.POST['start_time']
+            end_time = request.POST['end_time']
+
+
             eventID = request.GET.get('eventID')
-            eventImage=request.FILES.get('eventImage', None)
+            eventImage=request.FILES.get('eventImage')
             #retrieve the data in the fields and create an event object
             event = get_object_or_404(Event, event_id=eventID)
 
-
+            # set the event attributes to the new values and save the updated version in the database
             if eventImage:
-             if event.image and 'eventImage'  in request.FILES:
-               old_image_path = os.path.join(settings.MEDIA_ROOT, str(event.image))
-               if os.path.exists(old_image_path):
-                   os.remove(old_image_path)
+                event.image = eventImage.read()  #test if image is updated or not
 
-               event.image=eventImage
+            if start_time:
+                s_time = datetime.strptime(start_time, '%H:%M')
+                event.start_time = s_time.time()
 
-            #set the event attributes to the new values and save the updated version in the database
+            if end_time:
+                e_time = datetime.strptime(end_time, '%H:%M')
+                event.end_time = e_time.time()
+
+
             event.date=date_obj
             event.location=location
             event.description=description
+
             event.save()
 
             messages.success(request, "Account Updated")
@@ -113,9 +141,19 @@ def events_home(request):
     events=events.order_by('date')
     return render(request, 'events/events_home.html',{'events':events})
 
+def is_valid_email(email):
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
+
 def rsvp_event(request):
     eventID=request.GET.get("eventID")
     event=Event.objects.get(event_id=eventID)
+
+    time = event.start_time.strftime('%H:%M')+"-"+event.end_time.strftime('%H:%M')
+
 
     if request.method=='POST':
         event_id = request.POST.get("eventID")
@@ -123,9 +161,25 @@ def rsvp_event(request):
         student_no = request.POST['studentNo']
         name = request.POST['name']
         surname = request.POST['surname']
-        persEmail = request.POST['email']
+        email = request.POST['email']
+        time = event.start_time.strftime('%H:%M') + "-" + event.end_time.strftime('%H:%M')
 
+        if is_valid_email(email): #check if the email is valid
+            messages.success(request, "RSVP Successful")
 
+            if event.count is None:
+                event.count = 1
+            else:
+                event.count = event.count + 1 #increment event count everytime a student decides to RSVP that certain event
+            event.save()
 
-        return redirect('success')
-    return render(request,'events/rsvp_event.html',{'event':event})
+            return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
+        else:
+            messages.success(request, "Invalid email!! Try again")
+            return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
+
+    return render(request,'events/rsvp_event.html',{'event':event,'time':time})
+
+def serve_image(request,id): #serve the image from the database as image, converting it from binary to image
+    event = Event.objects.get(event_id=id)
+    return HttpResponse(event.image, content_type="image/jpeg")  # Or png
