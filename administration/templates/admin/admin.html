@@ -12,10 +12,14 @@
       <h1>MEB-HUB</h1>
     </div>
       <ul>
-        <li><img src="/static/assets/images/dashboard (2).png" alt="">&nbsp;<span>Dashbord</span></li>
-        <li><img src="/static/assets/images/profile.png" alt="">&nbsp;<span>Profile</span></li>
-        <li><img src="/static/assets/images/help-web-button.png" alt="">&nbsp;<span>Help</span></li>
-        <li><img src="/static/assets/images/logout.png" alt="">&nbsp;<span>Logout</span></li>
+        <li><img src="/static/assets/images/dashboard (2).png" alt="">&nbsp;
+          <span><a href="{% url 'admin_home' %}">Dashbord</a></span>
+        </li>
+        {% comment %} <li><img src="/static/assets/images/profile.png" alt="">&nbsp;<span>Profile</span></li> {% endcomment %}
+        {% comment %} <li><img src="/static/assets/images/help-web-button.png" alt="">&nbsp;<span>Help</span></li> {% endcomment %}
+        <li><img src="/static/assets/images/logout.png" alt="">&nbsp;
+          <span><a href="{% url 'account:landing' %}">Logout</a></span>
+        </li>
       </ul>
   </div>
   <div class="container">

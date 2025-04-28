@@ -9,7 +9,10 @@ from django.forms import Form
 
 # Create your views here.
 def admin_home(request):
-  return render(request,"admin/admin.html")
+  admin =  Admin.objects.all().get(admin_id=request.session['admin_id'])
+  return render(request,"admin/admin.html",{
+    "admin": admin
+  })
 
 #campus functionalilities
 
