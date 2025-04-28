@@ -13,7 +13,7 @@ class ScheduleCode(models.Model):
         return f"{self.schedule_code} {self.campus1} and {self.campus2}"
     
 class Bus(models.Model):
-    bus_id = models.IntegerField(primary_key=True)
+    bus_id = models.AutoField(primary_key=True)
     bus_name = models.CharField(max_length=255,null=False)
     campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
 

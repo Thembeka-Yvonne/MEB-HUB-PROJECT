@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus.css">
   <title>Buses Menu</title>
-  <h1>Bus Menu</h1>
-  <ol>
-    <li><a href="{% url 'add_all_campus_view' %}">Add Schedule</a></li>
-    <li><a href="">Delete Schedule</a></li>
-    <li><a href="">Modify Schedule</a></li>
-  </ol>
 </head>
 <body>
-  
+  <h1>Bus Menu</h1>
+  <div class="container">
+    <a class="card" href="{% url 'add_all_campus_view' %}">
+      <span>Add Schedule</span>
+    </a>
+    <a class="card" href="{% url 'add_bus' %}"><span>Add Bus</span></a>
+    <a class="card" href="{% url 'remove_bus' %}"><span>Remove Bus</span></a>
+  </div>
 </body>
 </html>

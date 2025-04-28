@@ -4,16 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>All Campuses</title>
+  <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus_schedule.css">
 </head>
 <body>
   <h1>All Campuses</h1>
-  <p>
-    Please click the link below to add bus schedule for the campus:
-  </p>
   <ol>
+    <div class="container">
     {%for camp in list %}
-     <li><a href="add_bus_schedule/{{camp.schedule_code}}">{{ camp.campus1 }} and {{ camp.campus2 }}</a></li>
+    <a class="box" href="add_bus_schedule/{{camp.schedule_code}}">
+      <p>{{ camp.campus1 }} and {{ camp.campus2 }}</p>
+    </a>
     {% endfor %}
+    </div>
   </ol>
 </body>
 </html>

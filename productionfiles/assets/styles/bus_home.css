@@ -37,8 +37,8 @@ body{
   
 
 .card span{
-  display: inline-block;
-  margin: auto;
+  display: flex;
+  justify-content: center;
 }
 
 .card span a{

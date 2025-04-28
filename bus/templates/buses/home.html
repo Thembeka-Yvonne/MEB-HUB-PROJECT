@@ -9,11 +9,27 @@
     <link rel="stylesheet" href="{% static 'assets/styles/bus_home.css' %}">
 </head>
 <body>
+
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-title">BUS SCHEDULE MENU</div>
+    <div>
+        <ul>
+            <li><a href="{% url 'account:home' %}">Home</a></li>
+            <li><a href="{% url 'account:about' %}">About</a></li>
+            <li><a href="{% url 'account:contact' %}">Contact</a></li>
+        </ul>
+    <div>
+  </nav>
+
+
     <div class="container">
         {% for code in list %}
-         <div class="card">
-            <span><a href="view_schedule/{{code.schedule_code}}">{{ code.campus1 }} and {{ code.campus2 }}</a></span>
-         </div>
+        <a href="view_schedule/{{code.schedule_code}}">
+            <div class="card">
+                {{ code.campus2 }} 
+            </div>
+        </a>
         {% endfor %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

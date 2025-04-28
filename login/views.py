@@ -27,11 +27,9 @@ def login(request):
                     stud = Student.objects.all().get(studentEmail=username)
                     
                     if stud.password == password:
-                        initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
-                        return render(request,"home/home.html",{
-                            "email": stud,
-                            "initials": initials
-                        })
+                        request.session['stud_id'] = stud.studentNumber
+                        return redirect("account:home")
+                        
                     else:
                         messages.error(request, "Inccorect Username / Password!")
                         return redirect("/login")
@@ -110,8 +108,14 @@ def admin(request):
 def logout_view(request):
     logout(request)
     return redirect('account:landing')
+
 def home(request):
-    return render(request, 'home/home.html')
+    stud = Student.objects.all().get(studentNumber=request.session['stud_id'])
+    initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
+    return render(request,"home/home.html",{
+      "email": stud,
+      "initials": initials })
+    
 def about(request):
     return render(request,'about_us/about_us.html')
 def contact(request):

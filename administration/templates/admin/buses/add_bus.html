@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus_form.css">
+  <title>Add Bus</title>
+</head>
+<body>
+  <h1>Add New Bus</h1>
+  <form class="container" action="{% url 'add_bus' %}" method="POST">
+    {% csrf_token %}
+    <label >Bus Name:</label>
+    <input type="text" name="bus_name" required>
+    
+    <label >Campus: </label>
+    <select name="campus" required>
+      {% for campus in campus_list %}
+        <option value="{{ campus.campus_id }}">{{ campus.campus_name }}</option>
+      {% endfor %}
+    </select>
+    
+    <input type="submit" value="Add Bus">
+    </form>
+    {% comment %} <footer>
+      <ol>
+        <li><a href="{% url 'admin_home' %}">Home</a></li>
+      </ol>
+    </footer> {% endcomment %}
+</body>
+</html>
