@@ -78,8 +78,6 @@ def add_bus_schedule(request,code):
       "bus_list": bus_list
     })
   
-  
-
 def events_menu(request):
   return render(request,"admin/events/events_menu.html")
 

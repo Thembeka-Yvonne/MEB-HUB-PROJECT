@@ -3,13 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Events Admin</title>
+    <style>
+        .admin-box{
+width: 250px;
+height: 150px;
+border: 2px dashed #aaa;
+display: flex;
+margin:left;
+padding:0px;
+        }
+    </style>
 </head>
 <body>
     <h1>Events Administration</h1>
-    <ol>
-            <li>Click <a href="{% url 'add_event' %}">here</a> to add an event</li>
-            <li>Click <a href="{% url 'update_events'%} ">here</a> to update an event</li>
-            <li>Click <a href="{% url 'delete_event' %}">here</a> to delete an event</li>
-    </ol>
+
+        <div class="admin-box">
+                <table>
+                    <tr>
+                        <td><h2>Admin Details</h2></td>
+                    </tr>
+                    <tr>
+                        <td><b>Employee ID: </b>{{admin.admin_id}}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Name: </b>{{admin.name}}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Surname: </b>{{admin.surname}}</td>
+                    </tr>
+                </table>
+
+        </div>
+        <div>
+            <ol>
+                <li>Click <a href="{% url 'add_event' %}?adminEmail={{admin.email}}">here</a> to add an event</li>
+                <li>Click <a href="{% url 'update_events' %}?adminID={{admin.admin_id}} ">here</a> to update an event</li>
+            </ol>
+        </div>
+        <p>
+
+        </p>
 </body>
 </html>

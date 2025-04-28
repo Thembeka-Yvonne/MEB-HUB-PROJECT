@@ -1,5 +1,12 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
+{% for message in messages %}
+            <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+                {{message}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+{% endfor %}
 <head>
     <meta charset="UTF-8">
     <title>Add Event</title>
@@ -32,14 +39,16 @@ background-color: rgba(40, 167, 69, 0.1);
 </head>
 <body>
     <h1>Add Event</h1>
-    <form action="{% url 'add_event' %}" method="POST"}>
+    <form action="{% url 'add_event' %}?adminEmail={{admin.email}}" method="POST" enctype="multipart/form-data" }>
+        {% csrf_token %}
+        <input type="hidden" name="admin_id" value="{{admin.admin_id}}">
         <table>
             <tr>
-                <td>Event ID: format():</td>
-                <td><input type="text" name="date" required></td>
+                <td>Admin ID: </td>
+                <td>{{admin.admin_id}}</td>
             </tr>
             <tr>
-                <td>Enter the date of the event: (format: DD-MON-YYYY)</td>
+                <td>Enter the date of the event: (format: YYYY-MM-DD)</td>
                 <td><input type="text" name="date" required></td>
             </tr>
             <tr>
@@ -52,7 +61,9 @@ background-color: rgba(40, 167, 69, 0.1);
             </tr>
             <tr>
                 <td>Campus</td>
-                <td><input type="text" name="campus" required value="Admin campus"></td>
+                <td>{{admin.campus_id.campus_name}}</td><!--admin: refers to the admin object passed from the views.py to the templates.
+                 .campus_id: is the foreign key field on the Admin model that links to the Campus model, gives access to it
+                 .campus_name: refers to the field name of the Campus model that stores the name of the campus-->
             </tr>
             <tr>
                 <td>Upload image of event below:</td>
@@ -62,8 +73,8 @@ background-color: rgba(40, 167, 69, 0.1);
                   <div class="square " id="imageContainer">
                     <img id="uploadedImage" alt="Uploaded Image">
                 </div>
-                <!-- Button -->
-                <input type="file" name="eventImage" onchange="previewEventImg()" id="customFile" hidden="">
+
+                <input type="file" name="image" onchange="previewEventImg()" id="customFile" hidden="">
                 <label class="btn btn-success-soft btn-block" for="customFile">Upload</label>
                   <script>
                     function previewEventImg() {
@@ -84,7 +95,8 @@ background-color: rgba(40, 167, 69, 0.1);
                 </td>
                 </tr>
         </table>
-        <input type="submit" value="ADD EVENT">
+         <button type="submit">ADD EVENT</button>
+         <h2>Click <a href="{% url 'events_menu' %}?adminEmail={{admin.email}}">here</a> to go back to the menu page</h2>
     </form>
 </body>
 </html>
