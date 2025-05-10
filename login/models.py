@@ -22,6 +22,7 @@ class Student(models.Model):
         password = models.CharField(max_length=150)
         stud_card_image = models.ImageField(upload_to='images',null=True)
         campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
+        uses_bus = models.BooleanField(default=False)
 
 def __str__(self):
         return f"{self.studentNumber} {self.name} {self.surname}"
