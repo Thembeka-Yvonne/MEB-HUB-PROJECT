@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Schedule Stats</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus.css">
+    <style>
+      h1{
+        text-align: center;
+        background-color:  #1286ad;
+        color: white;
+        padding: 10px;
+        margin: 0;
+      }      
+      p{
+        padding-top: 30px;
+        color: #1286ad;
+        font-size: 20px;
+      }
+      h2{
+        margin-top:50px;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        text-align: center;
+        text-decoration: underline;
+        color:#1286ad ;
+      }
+    </style>
+</head>
+<body>
+    <h1>Bus Schedule Stats</h1>
+
+    <p><strong>Total Schedule Views:</strong> {{ total_views }}</p>
+
+    {% if most_viewed %}
+        <p><strong>Most Viewed:</strong>
+            {{ most_viewed.schedule_code__schedule_code }} -
+            {{ most_viewed.schedule_code__campus1 }} and
+            {{ most_viewed.schedule_code__campus2 }}
+            ({{ most_viewed.view_count }} views)
+        </p>
+    {% endif %}
+
+    <h2>Views Per Schedule Code</h2>
+    <canvas id="viewsBySchedule"></canvas>
+
+    <h2>Views Over Time</h2>
+    <canvas id="viewsByDay"></canvas>
+
+    <h2>Views in Last 7 Days</h2>
+    <canvas id="viewsLast7Days"></canvas>
+
+    <script>
+      // Function to create the charts
+      function createChart(id, labels, data, label, type = 'bar') {
+          new Chart(document.getElementById(id), {
+              type: type,
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: label,
+                      data: data,
+                      backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 2
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          ticks: { precision: 0 }
+                      }
+                  }
+              }
+          });
+      }
+  
+      // Views per schedule (Bar chart)
+      const scheduleLabels = [
+          {% for label, count in views_per_schedule %}
+              "{{ label }}",
+          {% endfor %}
+      ];
+  
+      const scheduleData = [
+          {% for label, count in views_per_schedule %}
+              {{ count }},
+          {% endfor %}
+      ];
+  
+      // Debugging output
+      console.log('Schedule Labels:', scheduleLabels); 
+      console.log('Schedule Data:', scheduleData);
+  
+      createChart('viewsBySchedule', scheduleLabels, scheduleData, 'Views per Schedule');
+  
+      // Views by day (Line chart)
+      const dayLabels = [
+          {% for date, count in views_by_day %}
+              "{{ date }}",
+          {% endfor %}
+      ];
+  
+      const dayData = [
+          {% for date, count in views_by_day %}
+              {{ count }},
+          {% endfor %}
+      ];
+  
+      // Debugging output
+      console.log('Day Labels:', dayLabels); 
+      console.log('Day Data:', dayData);
+  
+      createChart('viewsByDay', dayLabels, dayData, 'Views by Day', 'line');
+  
+      // Views in the last 7 days (Line chart)
+      const recentLabels = [
+          {% for date, count in recent_views %}
+              "{{ date }}",
+          {% endfor %}
+      ];
+  
+      const recentData = [
+          {% for date, count in recent_views %}
+              {{ count }},
+          {% endfor %}
+      ];
+  
+      // Debugging output
+      console.log('Recent Labels:', recentLabels); 
+      console.log('Recent Data:', recentData);
+  
+      createChart('viewsLast7Days', recentLabels, recentData, 'Last 7 Days', 'line');
+  </script>
+</body>
+</html>

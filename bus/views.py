@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import Bus_schedule,ScheduleCode
+from .models import Bus_Stats
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -78,6 +79,11 @@ def view_schedule(request,schedule_code):
         return response
 
     list = Bus_schedule.objects.filter(schedule_code=schedule_code)
+    
+    schedule = ScheduleCode(schedule_code=schedule_code)
+    stats = Bus_Stats(schedule_code=schedule)
+    stats.save()
+    
     return render(request,"buses/view_schedule.html",{
         "list": list,
         "schedule_code": schedule_code

@@ -9,6 +9,8 @@ from django.contrib.auth.hashers import check_password
 from django.shortcuts import redirect
 from datetime import date
 from django.urls import reverse
+import re
+from django.utils import timezone
 
 
 # Create your views here.
@@ -29,20 +31,22 @@ def login(request):
                     
                     if stud.password == password:
                         request.session['stud_id'] = stud.studentNumber
+                        stud.login_time = timezone.now()
+                        stud.save()
                         return redirect("account:home")
                         
                     else:
-                        messages.error(request, "Inccorect Username / Password!")
-                        return redirect("/login")
+                        messages.error(request, "Inccorect Password!")
+                        return redirect("account:login")
 
                 except:
-                    messages.error(request, "Inccorect Username / Password!")
-                    return redirect("/login")
+                    messages.error(request, "Inccorect Username")
+                    return redirect("account:login")
 
             elif "@mebhub.ac.za" in username:
                 try:
 
-                    admin = Admin.objects.all().get(email=username)
+                    admin = Admin.objects.get(email=username)
                     
                     try:
                         actions = Admin_Action.objects.all().filter(admin_id=admin.admin_id,
@@ -61,15 +65,15 @@ def login(request):
                         })
                     else:
                         
-                        messages.error(request, "Inccorect Username / Password!")
-                        return redirect("/login")
+                        messages.error(request, "Inccorect Password!")
+                        return redirect("account:login")
                 except:
-                    messages.error(request, "Incorrect Username / Password!")
-                    return redirect('/login')
+                    messages.error(request, "Incorrect Username")
+                    return redirect('account:login')
         else:
             
             messages.error(request, 'Account does not exist!')
-            return redirect('/login')
+            return redirect('account:login')
     else:
         return render(request, 'login/login.html')
 
@@ -82,6 +86,22 @@ def register(request):
         student_email = request.POST['student_email']
         password = request.POST['password']
         password_confirmation = request.POST['confirm_password']
+        
+        pattern =  "@tut4life.ac.za"
+        
+        if (name == '' or surname == '' or student_email ==  '' 
+           or password == '' or password_confirmation == ''):
+            messages.error(request,"Fill all data fields!")
+            return redirect('/login/register')
+        
+        if len(password) < 8 :
+            messages.error(request,"Password Length > 8")
+            return redirect('/login/register')
+        
+        if not re.search(pattern,student_email):
+            messages.error(request,"Use TUT student email")
+            return redirect('/login/register')
+        
 
         if RegisteredStudent.objects.filter(studentNumber=student_no).exists():
             if password == password_confirmation:
@@ -96,7 +116,7 @@ def register(request):
                 messages.error(request,"password not matching")
                 return redirect('/login/register')
         else:
-            messages.error(request,"student not registerd on tut")
+            messages.error(request,"Not a TUT registered student")
             return redirect('/login/register')
 
     else:

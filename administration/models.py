@@ -8,7 +8,8 @@ class Admin_Action(models.Model):
   action_type = models.CharField(max_length=255,null=False)
   datetime = models.DateTimeField(default=timezone.now)
   admin_id = models.ForeignKey(Admin,on_delete=models.CASCADE)
+  icon = models.CharField(max_length=255,null=True)
   
-def __str__(self):
+  def __str__(self):
     return f"{self.record_id} {self.action_type} {self.datetime}"
 

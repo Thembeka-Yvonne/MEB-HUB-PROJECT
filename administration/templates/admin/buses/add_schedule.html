@@ -23,14 +23,24 @@
                 <option value="{{bus.bus_id}}">{{ bus.bus_name }}</option>
               {% endfor %}
           </select>
-          <label>travel time: </label>
+          <label>Departure time: </label>
           <input type="time" name="start_time" required>
-          <label>Last travel time: </label>
+          <label>Arrival time: </label>
           <input type="time" name="last_time" required>
-          <label>Duration difference: </label>
-          <input type="number" name="duration" required>
+          <label>Duration difference(HRS): </label>
+          <input type="number"  name="duration" required>
           <input type="submit" value="GENERATE BUS SCHEDULE">
     </form>
+    {% if errors %}
+    <div style="color: red;">
+        <p><strong>Form errors:</strong></p>
+        <ul style="list-style-type: none;">
+            {% for field, error in errors.items %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
   </div>
 </body>
 </html>

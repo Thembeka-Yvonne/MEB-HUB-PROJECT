@@ -2,6 +2,7 @@ from tkinter.constants import CASCADE
 
 from django.db import models
 from login.models import *
+from django.utils import timezone
 
 # Create your models here.
 class ScheduleCode(models.Model):
@@ -31,4 +32,8 @@ class Bus_schedule(models.Model):
 
     def __str__(self):
         return f"{self.schedule_code} {self.departure} to {self.destination}"
-    
+
+
+class Bus_Stats(models.Model):
+    viewed_at = models.DateTimeField(default=timezone.now)
+    schedule_code = models.ForeignKey(ScheduleCode,on_delete=models.CASCADE)
