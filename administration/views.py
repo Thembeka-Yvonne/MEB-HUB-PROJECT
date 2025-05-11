@@ -102,7 +102,9 @@ def add_bus_schedule(request,code):
   })
   
 def events_menu(request):
-  return render(request,"admin/events/events_menu.html")
+  adminEmail = request.GET.get("adminEmail")
+  admin = Admin.objects.select_related('campus_id').get(email=adminEmail)
+  return render(request,"admin/events/events_menu.html",{'admin':admin})
 
 def addAction(admin_id: int,record_type: str):
   action = Admin_Action(action_type=record_type,admin_id=admin_id,
