@@ -23,4 +23,8 @@ urlpatterns = [
     #url patterns for the bus
     path("add_bus",views.add_bus,name="add_bus"),
     path("remove_bus",views.remove_bus,name="remove_bus"),
+
+     #dashboard pages
+    path("user_management",views.user_management,name="user_management"),
+    path("analytics",views.analytics,name="analytics")
 ]
