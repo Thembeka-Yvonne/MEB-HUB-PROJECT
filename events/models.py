@@ -28,4 +28,4 @@ class RSVP(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     guest_name = models.CharField(max_length=255)
     guest_surname = models.CharField(max_length=255)
-    guest_studentNumber = models.CharField(max_length=255)
+    guest_studentnumber = models.CharField(max_length=255)
