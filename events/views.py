@@ -1,24 +1,28 @@
-import os
-from contextlib import nullcontext
 
-from django.http import HttpResponseBadRequest, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from administration.templates.admin.events.EventForms import EventForms
-from login.models import Admin, Student
-from events.models import Event
+from login.models import Admin
 from datetime import datetime, date
-from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.db import connection, IntegrityError
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from .models import Event, RSVP
+import csv
+from administration.views import addAction
+from login.models import Student
+
 
 
 # Create your views here.
 def add_event(request):
-    adminEmail = request.GET.get("adminEmail")
-    admin = Admin.objects.select_related('campus_id').get(email=adminEmail)
+    admin_id = request.session.get('admin_id')
+    admin = Admin.objects.get(admin_id=admin_id)
+    initials = request.session.get("initials")
 
     # 'select_related' obtains all data at one time through a multi-table join Association
     # We have two tables that are related through foreign key 'campus_id', so basically what
@@ -50,23 +54,30 @@ def add_event(request):
                 admin_id_id=admin_id,
                 image=image_data,
                 start_time=s_time.time(),
-                end_time=e_time.time()
+                end_time=e_time.time(),
+                attendance_count=0
             )
             event.save()
-        return redirect('success')
 
-    return render(request, 'admin/events/add_event.html', { 'admin': admin})
+            addAction(admin_id=admin, record_type="Added a new event", icon="bi bi-calendar")
+
+        messages.success(request, "Event Added successfully")
+        return redirect(reverse("admin_home"))
+
+    return render(request, 'admin/events/add_event.html', { 'admin': admin,'initials':initials})
 
 
-def success(request):
-  # page displayed if event is added successfully
-  return render(request, 'admin/events/success.html')
+
 
 
 def update_event_page(request):
     #this is the page which admin uses to update events.
+    initials = request.session.get("initials")
+
     if request.method=='POST':
         try:
+            admin_id=request.session.get("admin_id")
+            admin=Admin.objects.get(admin_id=admin_id)
             dateStr= request.POST.get("date")
             date_obj=datetime.strptime(dateStr,"%B %d, %Y").date()
 
@@ -100,11 +111,14 @@ def update_event_page(request):
             event.description=description
 
             event.save()
+            addAction(admin_id=admin, record_type="Updated an event", icon="bi bi-calendar")
 
-            messages.success(request, "Account Updated")
-            return redirect(f"{reverse('update_event_page')}?eventID={event.event_id}")
+            messages.success(request, "Event Updated")
+
+            return redirect(reverse("admin_home"))
         except ValueError:
-            return HttpResponseBadRequest("Invalid date format. Please use 'Nov. 25, 2025' ") #handling exception of wrong date format
+            messages.error(request, "Date format must be: Month DD, YYYY (e.g., April 25, 2025)")
+            return redirect(request.path + f"?eventID={request.GET.get('eventID')}")
 
     #retrieve eventID from the url (GET method) and create event object which you will pass to the template to
     #display relevant information to update.
@@ -114,32 +128,135 @@ def update_event_page(request):
                 messages.error(request, "Event not found!")
                 return redirect("/update_events")
 
-    return render(request, 'admin/events/update_event_page.html',{'event':event})
+    return render(request, 'admin/events/update_event_page.html',{'event':event,'initials':initials})
+
+def delete_event(request):
+    admin_id = request.session.get("admin_id")
+    admin = Admin.objects.get(admin_id=admin_id)
+    event_id=request.GET.get("eventID")
+    if request.method == 'POST':
+        event = get_object_or_404(Event, event_id=event_id)
+        event.delete()
+        messages.success(request, "Event Deleted")
+        addAction(admin_id=admin, record_type="Deleted an event", icon="bi bi-x-circle")
+
+    return redirect(reverse("admin_home"))
+
+
 
 def update_events(request):
     #recieves the adminID from the URL which is passed from the admin.html page and you retrieve the events posted
     #by that specfic admin, pass the list of events to the template to display so admin can choose which event to update,
     #once event is select, redirect to update_event_page to allow admin to update the event details
-    adminID=request.GET.get("adminID")
-    admin=Admin.objects.all().get(admin_id=adminID)
+    admin_id = request.session.get('admin_id')
+    admin = Admin.objects.get(admin_id=admin_id)
+    initials = request.session.get("initials")
+
     events=Event.objects.all()
 
     if request.method=='POST':
         event_id=request.POST.get("event_id")
         event=Event.objects.all().get(event_id=event_id)
         return redirect(f"{reverse('update_event_page')}?eventID={event.event_id}")
-    return render(request, 'admin/events/update_events.html', {'admin': admin,'events':events})
+    return render(request, 'admin/events/update_events.html', {'admin': admin,'events':events,'initials':initials})
+
+
 
 
 def events_home(request):
     Event.objects.filter(date__lt=date.today()).delete() #automatically delete events
-    studEmail=request.GET.get("studEmail")
-    student=Student.objects.get(studentEmail=studEmail)
-
 
     events= Event.objects.all()
     events=events.order_by('date')
-    return render(request, 'events/events_home.html',{'events':events})
+    initials = request.session.get("initials")
+
+    return render(request, 'events/events_home.html',{'events':events,'initials':initials})
+
+def event_details(request):
+    admin_id = request.session.get('admin_id')
+    admin = Admin.objects.get(admin_id=admin_id)
+    events = Event.objects.all()
+    initials = request.session.get("initials")
+    return render(request, 'admin/events/event_details.html',{'admin': admin,'events':events,'initials':initials})
+
+
+def download_event_report(request,event_id,format):
+    if format == 'pdf':
+        return generate_event_pdf(request, event_id)
+    elif format == 'csv':
+        return generate_event_csv(request, event_id)
+    else:
+        return HttpResponse("Invalid format", status=400)
+
+def generate_event_csv(request, event_id):
+    #specify format for csv file
+    event = get_object_or_404(Event, event_id=event_id)
+    rsvps = RSVP.objects.filter(event_id=event_id)
+
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Event Description', event.description])
+    writer.writerow(['Date', event.date])
+    writer.writerow(['Attendance Count', event.attendance_count])
+    writer.writerow([])
+    writer.writerow(['Guest Name', 'Guest Surname','Student Number'])
+
+    for rsvp in rsvps:
+        writer.writerow([rsvp.guest_name,rsvp.guest_surname, rsvp.guest_studentnumber])
+
+    return response
+
+
+def generate_event_pdf(request, event_id):
+        # specify format for pdf file
+        event = get_object_or_404(Event, event_id=event_id)
+        rsvps=RSVP.objects.filter(event_id=event_id)
+        attendance_count=event.attendance_count
+
+        # Create PDF response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.pdf"'
+
+        p = canvas.Canvas(response, pagesize=A4)
+        width, height = A4
+        y = height - 50
+
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, y, f"Event Report: {event.description}")
+        y -= 30
+
+        p.setFont("Helvetica", 12)
+        p.drawString(50, y, f"Date: {event.date}")
+        y -= 20
+        p.drawString(50, y, f"Attendance Count: {attendance_count}")
+        y -= 30
+
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "Name")
+        p.drawString(200, y, "Surname")
+        p.drawString(350, y, "Student Number")
+        y -= 20
+        p.line(50, y + 10, 550, y + 10)
+
+        p.setFont("Helvetica", 10)
+        for rsvp in rsvps:
+            if y < 100:
+                p.showPage()
+                y = height - 50
+            p.drawString(50, y, rsvp.guest_name)
+            p.drawString(200, y, rsvp.guest_surname)
+            p.drawString(350, y, rsvp.guest_studentnumber)
+            y -= 18
+
+        p.showPage()
+        p.save()
+        return response
+
+
+
 
 def is_valid_email(email):
     try:
@@ -151,34 +268,35 @@ def is_valid_email(email):
 def rsvp_event(request):
     eventID=request.GET.get("eventID")
     event=Event.objects.get(event_id=eventID)
-
+    studNum=request.session.get("stud_id")
+    student=Student.objects.get(studentNumber=studNum)
     time = event.start_time.strftime('%H:%M')+"-"+event.end_time.strftime('%H:%M')
 
 
     if request.method=='POST':
         event_id = request.POST.get("eventID")
         event = Event.objects.all().get(event_id=event_id)
-        student_no = request.POST['studentNo']
-        name = request.POST['name']
-        surname = request.POST['surname']
+        guest_student_no = request.POST['studentNo']
+        guest_name = request.POST['name']
+        guest_surname = request.POST['surname']
         email = request.POST['email']
-        time = event.start_time.strftime('%H:%M') + "-" + event.end_time.strftime('%H:%M')
 
         if is_valid_email(email): #check if the email is valid
-            messages.success(request, "RSVP Successful")
-
-            if event.count is None:
-                event.count = 1
-            else:
-                event.count = event.count + 1 #increment event count everytime a student decides to RSVP that certain event
-            event.save()
-
+            try:
+                with connection.cursor() as cursor:
+                    #call the procedure so it can add values into the rsvp table
+                    cursor.execute(""" 
+                            CALL public.add_rsvp(%s, %s, %s,%s) 
+                        """, [event_id, guest_name, guest_student_no,guest_surname])
+                messages.success(request, "RSVP Successful, check your email or email spam")
+            except IntegrityError:
+                messages.error(request, "Database Error! Could not save RSVP.")
             return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
         else:
             messages.success(request, "Invalid email!! Try again")
             return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
 
-    return render(request,'events/rsvp_event.html',{'event':event,'time':time})
+    return render(request,'events/rsvp_event.html',{'event':event,'time':time,'student':student})
 
 def serve_image(request,id): #serve the image from the database as image, converting it from binary to image
     event = Event.objects.get(event_id=id)
