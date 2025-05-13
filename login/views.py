@@ -11,7 +11,9 @@ from datetime import date
 from django.urls import reverse
 import re
 from django.utils import timezone
-
+from django.db.models.functions import TruncDate
+from bus.models import ScheduleCode
+from events.models import Event
 
 # Create your views here.
 def landing(request):
@@ -46,22 +48,32 @@ def login(request):
             elif "@mebhub.ac.za" in username:
                 try:
 
-                    admin = Admin.objects.get(email=username)
-                    
+                    admin = Admin.objects.all().get(email=username)
+
                     try:
-                        actions = Admin_Action.objects.all().filter(admin_id=admin.admin_id,
-                                                                datetime__date = date.today())
-                    except:
+                        today = timezone.localdate()
+                        actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id, action_date=today)
+                        events = Event.objects.filter(date__year=today.year, date__month=today.month)
+                        cnt_routes=ScheduleCode.objects.count()
+                    except Exception as e:
+                        print(f"Error fetching actions or events: {e}")
                         actions = None
+                        events=None
 
                     if admin.password == password:
-                        
-                        if "admin_id" not in request.session:
-                            request.session["admin_id"] = admin.admin_id
-                            
-                        return render(request,"admin/admin.html",{
-                            "admin": admin,
-                            "actions": actions
+
+
+                        request.session["admin_id"] = admin.admin_id
+
+                        initials = f"{admin.name[0].upper()}{admin.surname[0].upper()}"
+                        request.session["initials"]=initials
+
+                        return render(request, "admin/admin.html", {
+                        "admin": admin,
+                        "actions": actions,
+                        "events":events,
+                        "initials":initials,
+                        "cnt_routes":cnt_routes
                         })
                     else:
                         
@@ -133,6 +145,7 @@ def logout_view(request):
 def home(request):
     stud = Student.objects.all().get(studentNumber=request.session['stud_id'])
     initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
+    request.session["initials"] = initials
     return render(request,"home/home.html",{
       "email": stud,
       "initials": initials })
@@ -145,23 +158,26 @@ def contact(request):
 
 
 def update_profile(request):
-        studEmail = request.GET.get("studEmail")
-        student = Student.objects.get(studentEmail=studEmail)
-        initials = f"{student.name[0].upper()}{student.surname[0].upper()}"
+        stud_id = request.session.get("stud_id")
+        student = Student.objects.get(studentNumber=stud_id)
+        initials=request.session.get("initials")
 
         if request.method == 'POST':
+            student = Student.objects.get(studentNumber=stud_id)
             student.name = request.POST.get('name')
             student.surname = request.POST.get('surname')
-            student.studentNumber = request.POST.get('student_number')
+            initials=f"{student.name[0].upper()}{student.surname[0].upper()}"
 
-            if 'file' in request.FILES:
-                student.stud_card_image = request.FILES['file']
+            student_password= request.POST.get('password')
+            if student_password:
+                student.password=student_password
 
             student.save()
             messages.success(request, "Profile updated successfully! 🎉")
 
             # Redirect with actual student email in query param
             url = reverse('account:update_profile')
-            return redirect(f'{url}?studEmail={student.studentEmail}')
+            return redirect(f'{url}?initials={initials}')
+
 
         return render(request, 'home/update_profile.html', {'student': student, 'initials': initials})
