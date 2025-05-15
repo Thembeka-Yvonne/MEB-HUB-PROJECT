@@ -3,6 +3,7 @@ from tkinter.constants import CASCADE
 
 from django.db import models
 from django.db.models import IntegerField, CharField, OneToOneField, ForeignKey
+from django.utils import timezone
 
 
 # Create your models here.
@@ -20,9 +21,10 @@ class Student(models.Model):
         surname = models.CharField(max_length=100,default="")
         studentEmail = models.CharField(max_length=150)
         password = models.CharField(max_length=150)
-        stud_card_image = models.ImageField(upload_to='images',null=True)
         campus_id = models.ForeignKey(Campus,on_delete=models.CASCADE)
+        login_time = models.DateTimeField(default=timezone.now)
         uses_bus = models.BooleanField(default=False)
+
 
 def __str__(self):
         return f"{self.studentNumber} {self.name} {self.surname}"

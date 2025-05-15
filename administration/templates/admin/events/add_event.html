@@ -1,0 +1,367 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Event</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet"  href="/static/assets/styles/admin1.css">
+  <style>
+    .form-container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: 2rem auto;
+    }
+
+    .form-title {
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .form-table {
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-table td {
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .form-table tr:not(:last-child) td {
+      border-bottom: 1px solid #eee;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .image-upload-container {
+      position: relative;
+      margin: 1rem 0;
+    }
+
+    .square {
+      width: 100%;
+      height: 300px;
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background-color: #f8f9fa;
+    }
+
+    .square img {
+      max-width: 100%;
+      max-height: 100%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      cursor: move;
+    }
+
+    .resize-handle {
+      position: absolute;
+      right: 5px;
+      bottom: 5px;
+      width: 20px;
+      height: 20px;
+      background-color: #3498db;
+      border-radius: 50%;
+      cursor: se-resize;
+      z-index: 10;
+    }
+
+    .btn-upload {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #28a745;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .btn-upload:hover {
+      background-color: #218838;
+    }
+
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 1rem 0;
+    }
+
+    .btn-submit:hover {
+      background-color: #2980b9;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      color: #3498db;
+      margin-top: 1rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .size-info {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+      <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-title">M.E.B Admin</div>
+        <button class="profile-button" onclick="toggleMenu()">
+            <span id="user-initials">{{initials}}</span>
+        </button>
+        <div class="nav-menu" id="navMenu">
+            <a href="#"><i class="bi bi-person-circle"></i> Profile</a>
+            <a href="#"><i class="bi bi-gear-fill"></i> Settings</a>
+        </div>
+    </nav>
+      <div class="dashboard-container">
+    <div class="main-content">
+       <div class="header">
+           <h1>Add Event</h1>
+        </div>
+      <div class="form-container">
+        <form action="{% url 'add_event' %}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="admin_id" value="{{admin.admin_id}}">
+          <input type="hidden" id="resizedImageData" name="resizedImageData">
+
+          <table class="form-table">
+            <tr>
+              <td><strong>Admin ID:</strong></td>
+              <td>{{admin.admin_id}}</td>
+            </tr>
+            <tr>
+              <td><strong>Event Date:</strong><br><small>(format: YYYY-MM-DD)</small></td>
+              <td><input type="date" name="date" class="form-input" required></td>
+            </tr>
+            <tr>
+              <td><strong>Location:</strong></td>
+              <td><input type="text" name="location" class="form-input" required></td>
+            </tr>
+            <tr>
+              <td><strong>Description:</strong></td>
+              <td><input type="text" name="description" class="form-input" required></td>
+            </tr>
+            <tr>
+              <td><strong>Start time:</strong></td>
+              <td><input type="time" name="start_time" required></td>
+            </tr>
+            <tr>
+              <td><strong>End time:</strong></td>
+              <td><input type="time" name="end_time" required></td>
+            </tr>
+            <tr>
+              <td><strong>Campus:</strong></td>
+              <td>{{admin.campus_id.campus_name}}</td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <strong>Event Image:</strong>
+                <div class="image-upload-container">
+                  <div class="square" id="imageContainer">
+                    <img id="uploadedImage" alt="Event Image Preview" required>
+                    <div class="resize-handle" id="resizeHandle"></div>
+                  </div>
+                  <div class="size-info" id="sizeInfo">Original size: 0 x 0</div>
+                </div>
+                <label class="btn-upload" for="customFile">Choose Image</label>
+                <input type="file" name="image" onchange="previewEventImg()" id="customFile" hidden>
+              </td>
+            </tr>
+          </table>
+
+          <button type="submit" class="btn-submit">ADD EVENT</button>
+          <a href="{% url 'events_menu' %}?adminEmail={{admin.email}}" class="back-link">← Back to Events Menu</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
+    let originalWidth = 0, originalHeight = 0;
+    const imageContainer = document.getElementById('imageContainer');
+    const uploadedImage = document.getElementById('uploadedImage');
+    const resizeHandle = document.getElementById('resizeHandle');
+    const sizeInfo = document.getElementById('sizeInfo');
+    const resizedImageData = document.getElementById('resizedImageData');
+
+    function previewEventImg() {
+      const file = document.getElementById("customFile").files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onloadend = function(e) {
+        uploadedImage.src = e.target.result;
+        uploadedImage.style.display = "block";
+
+        // Get original dimensions
+        const img = new Image();
+        img.onload = function() {
+          originalWidth = this.width;
+          originalHeight = this.height;
+          sizeInfo.textContent = `Original size: ${originalWidth} x ${originalHeight}`;
+
+          // Set initial display size (max 500px while maintaining aspect ratio)
+          const maxSize = 500;
+          let displayWidth = originalWidth;
+          let displayHeight = originalHeight;
+
+          if (originalWidth > maxSize || originalHeight > maxSize) {
+            const ratio = Math.min(maxSize / originalWidth, maxSize / originalHeight);
+            displayWidth = originalWidth * ratio;
+            displayHeight = originalHeight * ratio;
+          }
+
+          uploadedImage.style.width = displayWidth + 'px';
+          uploadedImage.style.height = 'auto';
+        };
+        img.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Make image draggable within container
+    uploadedImage.addEventListener('mousedown', function(e) {
+      if (e.target !== resizeHandle) {
+        e.preventDefault();
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        document.onmousemove = function(e) {
+          e.preventDefault();
+          pos1 = pos3 - e.clientX;
+          pos2 = pos4 - e.clientY;
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+
+          let top = (uploadedImage.offsetTop - pos2) + 'px';
+          let left = (uploadedImage.offsetLeft - pos1) + 'px';
+
+          // Keep image within container bounds
+          const containerRect = imageContainer.getBoundingClientRect();
+          const imgRect = uploadedImage.getBoundingClientRect();
+
+          if (parseInt(top) > 0) top = '0px';
+          if (parseInt(left) > 0) left = '0px';
+          if (parseInt(top) < containerRect.height - imgRect.height)
+            top = (containerRect.height - imgRect.height) + 'px';
+          if (parseInt(left) < containerRect.width - imgRect.width)
+            left = (containerRect.width - imgRect.width) + 'px';
+
+          uploadedImage.style.top = top;
+          uploadedImage.style.left = left;
+        };
+
+        document.onmouseup = function() {
+          document.onmousemove = null;
+          document.onmouseup = null;
+        };
+      }
+    });
+
+    // Resize functionality
+    resizeHandle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = parseInt(uploadedImage.style.width || uploadedImage.width);
+      startHeight = parseInt(uploadedImage.style.height || uploadedImage.height);
+
+      document.onmousemove = function(e) {
+        if (!isResizing) return;
+        e.preventDefault();
+
+        const width = startWidth + (e.clientX - startX);
+        const height = startHeight + (e.clientY - startY);
+
+        // Maintain aspect ratio
+        const aspectRatio = originalWidth / originalHeight;
+        const newHeight = width / aspectRatio;
+
+        uploadedImage.style.width = Math.max(50, width) + 'px';
+        uploadedImage.style.height = Math.max(50, newHeight) + 'px';
+      };
+
+      document.onmouseup = function() {
+        isResizing = false;
+        document.onmousemove = null;
+        document.onmouseup = null;
+      };
+    });
+
+    // Before form submission, create a canvas with the resized image
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const fileInput = document.getElementById('customFile');
+      if (fileInput.files.length > 0) {
+        e.preventDefault();
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
+        img.onload = function() {
+          // Calculate the actual displayed size (might be different from style due to max-width constraints)
+          const displayedWidth = parseInt(uploadedImage.style.width);
+          const displayedHeight = parseInt(uploadedImage.style.height);
+
+          canvas.width = displayedWidth;
+          canvas.height = displayedHeight;
+
+          // Draw the image at the displayed size and position
+          ctx.drawImage(
+            img,
+            0, 0, originalWidth, originalHeight,  // source rectangle
+            0, 0, displayedWidth, displayedHeight  // destination rectangle
+          );
+
+          // Get the image data and add it to the form
+          const imageData = canvas.toDataURL('image/jpeg', 0.9);
+          resizedImageData.value = imageData;
+
+          // Continue with form submission
+          e.target.submit();
+        };
+
+        img.src = URL.createObjectURL(fileInput.files[0]);
+      }
+    });
+  </script>
+</body>
+</html>

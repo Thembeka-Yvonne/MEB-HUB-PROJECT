@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus_form.css">
+  <title>Remove Bus</title>
+</head>
+<body>
+  <h1>Remove Bus</h1>
+  <form class="container" action="{% url 'remove_bus' %}" method="POST">
+    {% csrf_token %}
+    <label >Campus: </label>
+    <select name="bus" required>
+      {% for bus in bus_list %}
+        <option value="{{ bus.bus_id }}">{{ bus.bus_name }}</option>
+      {% endfor %}
+    </select>
+    <input type="submit" value="REMOVE BUS"/>
+  </form>
+</body>
+</html>

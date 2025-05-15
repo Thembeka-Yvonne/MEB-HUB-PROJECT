@@ -4,24 +4,34 @@
 
 {% block content %}
         <h1>Bus Schedule</h1>
-        <table>
-            <tr>
-                <th>code</th>
-                <th>departure</th>
-                <th>destination</th>
-                <th>departure_time</th>
-                <th>arrival_time</th>
-                <th>duration</th>
-            </tr>
-            {% for schedule in list %}
+        {% if list  %}
+            <table>
                 <tr>
-                    <td>{{ schedule.schedule_code }}</td>
-                    <td>{{ schedule.departure}}</td>
-                    <td>{{ schedule.destination}}</td>
-                    <td>{{ schedule.departure_time}}</td>
-                    <td>{{ schedule.arrival_time}}</td>
-                    <td>{{ schedule.duration }}</td>
+                    <th>code</th>
+                    <th>departure</th>
+                    <th>destination</th>
+                    <th>departure_time</th>
+                    <th>arrival_time</th>
+                    <th>duration</th>
                 </tr>
-            {% endfor %}
-        </table>
+                {% for schedule in list %}
+                    <tr>
+                        <td>{{ schedule.schedule_code }}</td>
+                        <td>{{ schedule.departure}}</td>
+                        <td>{{ schedule.destination}}</td>
+                        <td>{{ schedule.departure_time}}</td>
+                        <td>{{ schedule.arrival_time}}</td>
+                        <td>{{ schedule.duration }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <form action="{% url 'view_schedule' schedule_code=schedule_code %}" method="POST">
+                {% csrf_token %}
+                <input class="btn-style" type="submit" value="DOWNLOAD SCHEDULE">
+                <input type="hidden" name="code" value="{{schedule_code}}">
+            </form>
+        {% else %}
+             <h2 style="text-align: center;margin-top: 40px;">No Bus Schedule</h2>
+        {% endif %}
+        
 {% endblock %}

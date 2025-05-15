@@ -25,6 +25,6 @@ urlpatterns = [
     path('login/',include('login.urls')),
     path('bus/',include('bus.urls')),
     path('administration/',include('administration.urls')),
-    
+    path('events/',include('events.urls')),
     path('', views.landing, name='landing')
 ]

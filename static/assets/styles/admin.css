@@ -187,3 +187,7 @@ th,td{
     display: none;
   }
 }
+
+ul li span a{
+  color: white;
+}

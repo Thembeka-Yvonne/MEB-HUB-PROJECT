@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'login',
     'bus',
     'events',
-    'administration'
+    'administration',
 ]
 
 MIDDLEWARE = [
@@ -101,7 +101,7 @@ DATABASES = {
         'USER': 'mebhubdatabase',  # Database user extracted from the URL
         'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
         'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
-        'PORT': '5432',  # Default PostgreSQL port
+        'PORT': '5432',  # Default PostgreSQL port,
     }
 }
 
@@ -130,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Johannesburg'
 
 USE_I18N = True
 

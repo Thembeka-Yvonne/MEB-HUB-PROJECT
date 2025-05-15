@@ -1,87 +1,39 @@
-from django.shortcuts import render
-from login.models import Campus
-from bus.models import ScheduleCode,Bus_schedule,Bus
+from django.shortcuts import render,redirect
+from login.models import Campus,Admin
+from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
-
+from datetime import date
+from django.forms import Form
+from events.models import Event
+from django.utils import timezone
+from django.db.models.functions import TruncDate
+from django.db.models import Count
 
 # Create your views here.
 def admin_home(request):
-  return render(request,"admin/admin.html")
+  admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+  today = timezone.now().date()
+  actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
+  events = Event.objects.filter(date__year=today.year, date__month=today.month)
+  cnt_routes=ScheduleCode.objects.count()
+  context={
+    "admin":admin,
+    "actions" :actions,
+    "events" :events,
+    "initials": f"{admin.name[0].upper()}{admin.surname[0].upper()}",
+    "cnt_routes":cnt_routes
+  }
+  return render(request,"admin/admin.html",context
+  )
 
 #campus functionalilities
 
-def campus_menu(request):
-  return render(request,"admin/campus/campus_menu.html")
-
-def add_campus(request):
-  if request.method == 'POST':
-    # campus_id = request.POST['campus_id']
-    campus_name = request.POST['campus_name']
-    campus_loc = request.POST['campus_location']
-    
-    # if not Campus.objects.all().filter(campus_id=campus_id).exists():
-    campus = Campus(campus_name=campus_name,location=campus_loc)
-    campus.save()
-      # action = Admin_Action(action_type="Add Campus",admin_id=)
-    return HttpResponseRedirect(redirect_to='add_campus')
-  else:
-   return render(request,"admin/campus/add_campus.html")
- 
- 
-def list_all_campus(request):
-  campus_list = Campus.objects.all()
-  return render(request,"admin/campus/remove_campus.html",{
-    "campus_list": campus_list
-  })
-  
-def remove_campus(request,id):
-  campus = Campus.objects.all().get(campus_id=id)
-  campus.delete()
-  return HttpResponseRedirect(redirect_to='/administration/list_all_campus')
-  
-  
-def modify_list_campus(request):
-  campus_list = Campus.objects.all()
-  return render(request,"admin/campus/modify_campus.html",{
-    "campus_list" : campus_list
-  })
-  
-  
-def modify_campus(request,id):
-  
-  campus = Campus.objects.all().get(campus_id=id)
-  
-  if request.method == 'POST':
-    
-    camp_name = request.POST['name']
-    camp_loc = request.POST['location']
-    
-    campus.campus_name = camp_name
-    campus.location = camp_loc
-    
-    campus.save()
-    
-    return HttpResponseRedirect(redirect_to='/administration/modify_list_campus')
-  
-  else:
-    
-    return render(request,"admin/campus/modify_initial_campus.html",{
-      "campus": campus
-    })
-
-  
-def view_all_campuses(request):
-  list = Campus.objects.all()
-  return render(request,"admin/campus/view_all_campuses.html",{
-    "list": list
-  })
-
-
 #bus functionalities
 def bus_menu(request):
-  return render(request,"admin/buses/bus_menu.html")
+  initials=request.session.get('initials')
+  return render(request,"admin/buses/bus_menu.html",{'initials':initials})
 
 def add_all_campuses_view(request):
   list = ScheduleCode.objects.all()
@@ -95,7 +47,8 @@ def add_bus_schedule(request,code):
   bus_list = Bus.objects.all()
   
   if request.method == 'POST':
-    
+
+
     bus = Bus.objects.all().get(bus_id=int(request.POST['bus']))
     start_time = request.POST['start_time']
     last_time = request.POST['last_time']
@@ -131,7 +84,8 @@ def add_bus_schedule(request,code):
         
       s_time = n_time + timedelta(hours=duration)
         
-        
+    admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+    addAction(admin_id=admin,record_type="Generated bus schedule",icon="bi bi-bus-front")
     return HttpResponseRedirect(redirect_to='/administration/bus_menu')
       
   else:
@@ -140,7 +94,101 @@ def add_bus_schedule(request,code):
       "bus_list": bus_list
     })
   
+def events_menu(request):
+  Event.objects.filter(date__lt=date.today()).delete()  # automatically delete events
+  admin_id = request.session.get('admin_id')
+  initials = request.session.get("initials")
+
+  if admin_id is None:
+    return redirect('admin_home')  # or handle expired session
+
+  admin = Admin.objects.select_related('campus_id').get(admin_id=admin_id)
+  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials})
+
+def addAction(admin_id: int,record_type: str,icon: str):
+  action = Admin_Action(action_type=record_type,admin_id=admin_id, icon=icon,
+                        datetime = timezone.now())
+  action.save()
   
 
-def events_menu(request):
-  return render(request,"admin/events/events_menu.html")
+def view_all_actions(request):
+  admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+  today = timezone.now().date()
+  actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,
+                                                                                    action_date=today)
+  events = Event.objects.filter(date__year=today.year, date__month=today.month)
+  cnt_routes = ScheduleCode.objects.count()
+  context = {
+    "admin": admin,
+    "actions": actions,
+    "events": events,
+    "initials": f"{admin.name[0].upper()}{admin.surname[0].upper()}",
+    "cnt_routes": cnt_routes
+  }
+  
+  return render(request,"admin/admin.html",context)
+
+def add_bus(request):
+  if request.method == 'POST':
+    form = Form(request.POST)
+    if form.is_valid():
+      bus_name = request.POST["bus_name"]
+      campus_id = request.POST["campus"]
+
+      campus = Campus.objects.all().get(campus_id=campus_id)
+      bus = Bus(bus_name=bus_name,campus_id=campus)
+
+      bus.save()
+      
+      admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+      
+      addAction(admin_id=admin,record_type="Added a new bus",icon="bi bi-bus-front")
+      
+      return redirect('view_all_actions')
+    
+    else:
+       return  render(request,"admin/buses/add_bus_html",{
+         "form": form
+       })
+
+  campus_list = Campus.objects.all()
+  return render(request,"admin/buses/add_bus.html",{
+    "campus_list": campus_list
+  })
+
+
+def remove_bus(request):
+   if request.method == 'POST':
+      form = Form(request.POST)
+      
+      if form.is_valid:
+        bus_id = request.POST["bus"]
+
+        bus = Bus.objects.all().get(bus_id=bus_id)
+        
+        bus.delete()
+        
+        admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+        
+        addAction(admin_id=admin,record_type="Bus has been removed",icon="bi bi-x-circle")
+        
+        return redirect('view_all_actions')
+      else:
+        return render(request,"admin/buses/remove_bus.html",{
+          "form": form
+        })
+
+   bus_list = Bus.objects.all()
+   return render(request,"admin/buses/remove_bus.html",{
+     "bus_list": bus_list
+   })
+
+def user_management(request):
+    initials=request.session.get("initials")
+    return render(request,'admin/user_management.html',{"initials":initials})
+
+def analytics(request):
+    initials=request.session.get("initials")
+    return render(request,'admin/analytics.html',{'initials':initials})
+      
+  
