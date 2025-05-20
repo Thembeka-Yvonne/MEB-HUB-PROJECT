@@ -147,9 +147,28 @@
     </div>
 
     <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 M.E.B. All rights reserved.</p>
-    </footer>
+ <footer class="footer">
+  <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; padding: 20px;">
+    <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
+      <h4 style="margin-bottom: 10px;">Contact Us</h4>
+      <p>Email: <a href="mailto:support@meb-system.com" style="color: rgb(7, 201, 255); text-decoration: none;">support@meb-system.com</a></p>
+      <p>Phone: <a href="tel:+1234567890" style="color:rgb(7, 201, 255) rgb(7, 201, 255); text-decoration: none;">+1 (234) 567-890</a></p>
+    </div>
+    <div style="flex: 1; min-width: 200px; margin-bottom: 15px;">
+      <h4 style="margin-bottom: 10px;">Quick Links</h4>
+      <p><a href="{% url 'account:about' %}" style="color:rgb(7, 201, 255); text-decoration: none;">About Us</a></p>
+      <p><a href="{% url 'account:contact' %}" style="color: rgb(7, 201, 255); text-decoration: none;">Contact Us</a></p>
+      <p><a href="#" style="color: rgb(7, 201, 255); text-decoration: none;">Privacy Policy</a></p>
+    </div>
+    <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
+      <h4 style="margin-bottom: 10px;">M.E.B System</h4>
+      <p>Empowering students to explore, connect, and navigate campus life effortlessly.</p>
+    </div>
+  </div>
+  <div style="text-align: center; padding: 10px; background-color: #212529; font-size: 0.9rem;">
+    &copy; 2025 M.E.B. All Rights Reserved.
+  </div>
+</footer>
 
 </body>
 </html>

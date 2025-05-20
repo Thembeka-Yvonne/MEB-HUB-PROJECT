@@ -5,13 +5,56 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/static/assets/styles/admin_bus/bus.css">
     <style>
-      h1{
-        text-align: center;
-        background-color:  #1286ad;
-        color: white;
-        padding: 10px;
-        margin: 0;
-      }      
+         :root {
+            --primary: #1286ad;
+            --primary-light: #1a9bc4;
+            --primary-dark: #0d6e8c;
+    }
+    .profile-button {
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    nav {
+             background-color: #1286ad;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            width: 100%;
+        }
+        .nav-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        .nav-menu a {
+            display: inline;
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            width: 150px;
+            text-align: center;
+        }
+        .nav-menu a:hover {
+            background-color: #555;
+        }
+
+      
       p{
         padding-top: 30px;
         color: #1286ad;
@@ -28,8 +71,24 @@
     </style>
 </head>
 <body>
-    <h1>Bus Schedule Stats</h1>
-
+    <nav>
+        <div class="nav-title">M.E.B Admin</div>
+        <div class="nav-menu" id="navMenu">
+            <a href="{% url 'admin_home' %}">Dashboard</a>
+            <a href="{% url 'events_menu' %}">Events Management</a>
+            <a href="{% url 'bus_menu' %}">Bus Management</a>
+            <a href="{% url 'analytics' %}">Analytics</a>
+            <a href="{% url 'account:logout' %}">Log Out</a>
+        </div>
+        <button class="profile-button" onclick="toggleMenu()">
+        <span id="user-initials">{{ initials }}</span>
+    </button>
+    </nav>
+    <div class="dashboard-container">
+ <div class="main-content">
+    <div class="header">
+      <h1>Bus schedule statistics</h1>
+    </div>
     <p><strong>Total Schedule Views:</strong> {{ total_views }}</p>
 
     {% if most_viewed %}
@@ -134,5 +193,7 @@
   
       createChart('viewsLast7Days', recentLabels, recentData, 'Last 7 Days', 'line');
   </script>
+ </div>
+    </div>
 </body>
 </html>

@@ -282,13 +282,15 @@
             reply_to: document.getElementById("email").value
              };
 
+
+
         emailjs.send("service_wzfvzxe", "template_4v3dsxn", params)
             .then(function(response) {
                 console.log("Email Sent!", response.status,response.text);
                 alert('RSVP added, please check your email or email spam.');
 
-                // After sending email, submit form to Django
-                document.getElementById('rsvpForm').submit();
+                //submit form to Django
+                 document.getElementById('rsvpForm').submit();
 
                 //clear the form
                 document.getElementById("name").value = "";
@@ -300,7 +302,7 @@
             })
              .catch(function(error) {
             console.log("Failed to send email ", error);
-            alert('There was an error sending the email. Please try again.');
+            alert('RSVP confirmed! However, we encountered an issue sending your confirmation email. Please check your email address or contact support.');
     });
     }
     </script>

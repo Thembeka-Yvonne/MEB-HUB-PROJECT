@@ -88,3 +88,5 @@ def view_schedule(request,schedule_code):
         "list": list,
         "schedule_code": schedule_code
     })
+
+
