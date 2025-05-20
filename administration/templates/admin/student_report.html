@@ -244,7 +244,7 @@
         <div class="stat-info">
           <span>
             {% for campus in campus_counts %}
-              {{ campus.campus__campus_name }}: {{ campus.count }}<br>
+              {{ campus.campus_name }}: {{ campus.count }}<br>
             {% empty %}
               No campus data
             {% endfor %}

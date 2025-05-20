@@ -83,7 +83,3 @@ def view_schedule(request, schedule_code):
         "schedule_code": schedule_code
     })
 
-<<<<<<< HEAD
-=======
-
->>>>>>> af0ceaacbbdf1ff310d518dd2d9c42e55aa119fa
