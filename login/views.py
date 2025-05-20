@@ -38,11 +38,11 @@ def login(request):
                         return redirect("account:home")
                         
                     else:
-                        messages.error(request, "Inccorect Password!")
+                        messages.error(request, "Incorrect Password!")
                         return redirect("account:login")
 
                 except:
-                    messages.error(request, "Inccorect Username")
+                    messages.error(request, "Incorrect Username")
                     return redirect("account:login")
 
             elif "@mebhub.ac.za" in username:
@@ -77,7 +77,7 @@ def login(request):
                         })
                     else:
                         
-                        messages.error(request, "Inccorect Password!")
+                        messages.error(request, "Incorrect Password!")
                         return redirect("account:login")
                 except:
                     messages.error(request, "Incorrect Username")
@@ -166,7 +166,10 @@ def update_profile(request):
             student = Student.objects.get(studentNumber=stud_id)
             student.name = request.POST.get('name')
             student.surname = request.POST.get('surname')
-            initials=f"{student.name[0].upper()}{student.surname[0].upper()}"
+
+            if student.name or student.surname:
+                initials = f"{student.name[0].upper()}{student.surname[0].upper()}"
+                request.session["initials"] = initials
 
             student_password= request.POST.get('password')
             if student_password:
