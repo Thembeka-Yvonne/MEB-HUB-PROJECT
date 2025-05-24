@@ -18,6 +18,7 @@ from events.models import Event
 # Create your views here.
 def landing(request):
     return render(request,"login/landing_page.html")
+
 def login(request):
     if request.method == 'POST':
 

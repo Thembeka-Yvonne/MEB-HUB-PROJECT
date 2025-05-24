@@ -17,7 +17,7 @@
       flex-direction: column;
     }
 
-    body  main {
+    body main {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -67,6 +67,8 @@
       border-radius: 10px;
       overflow: hidden;
       display: none;
+      min-width: 170px;
+      z-index: 10;
     }
 
     .nav-menu a {
@@ -87,6 +89,7 @@
       align-items: center;
       justify-content: center;
       padding: 50px 20px 20px;
+      width: 100%;
     }
 
     .content-container {
@@ -156,6 +159,7 @@
       padding: 25px;
       width: 250px;
       text-align: center;
+      margin-bottom: 20px;
     }
 
     .feature-card i {
@@ -183,6 +187,144 @@
 
     .nav-menu a i {
       margin-right: 8px;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 900px) {
+      .content-container {
+        padding: 25px 10px;
+        border-radius: 14px;
+      }
+      .main-container {
+        padding: 30px 5px 10px;
+      }
+      .features-section {
+        gap: 18px;
+        padding: 18px 5px;
+      }
+      .feature-card {
+        width: 90vw;
+        min-width: 180px;
+        max-width: 350px;
+        padding: 18px;
+      }
+      .footer {
+        font-size: 0.95rem;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 5px;
+      }
+      .nav-title {
+        font-size: 1.2rem;
+        margin-left: 0;
+        margin-bottom: 8px;
+      }
+      .profile-button {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+        margin-right: 0;
+      }
+      .nav-menu {
+        right: 5px;
+        top: 55px;
+        min-width: 120px;
+      }
+      .main-container {
+        padding: 10px 2px 5px;
+      }
+      .content-container {
+        padding: 12px 2vw;
+        border-radius: 8px;
+      }
+      .content-container h1 {
+        font-size: 1.1rem;
+      }
+      .content-container p {
+        font-size: 0.95rem;
+      }
+      .button-container {
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .btn {
+        width: 100vw;
+        max-width: 220px;
+        height: 42px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+      }
+      .features-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+      }
+      .feature-card {
+        width: 98vw;
+        min-width: 120px;
+        max-width: 100%;
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+      .feature-card i {
+        font-size: 2rem;
+      }
+      .footer {
+        font-size: 0.85rem;
+        padding: 8px 0;
+        background-color: #343a40;
+        width: 100vw;
+        min-width: 100vw;
+        margin-left: 0;
+        left: 0;
+        right: 0;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .footer > div {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 10px 2px !important;
+        width: 100vw;
+        min-width: 100vw;
+        box-sizing: border-box;
+        margin: 0 !important;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .nav-title {
+        font-size: 1rem;
+      }
+      .profile-button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+      }
+      .content-container h1 {
+        font-size: 1rem;
+      }
+      .btn {
+        font-size: 0.85rem;
+        height: 36px;
+      }
+      .feature-card {
+        font-size: 0.9rem;
+        padding: 6px;
+      }
+      .footer {
+        font-size: 0.75rem;
+        padding: 5px;
+      }
     }
   </style>
 </head>
@@ -244,7 +386,7 @@
     <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
       <h4 style="margin-bottom: 10px;">Contact Us</h4>
       <p>Email: <a href="mailto:support@meb-system.com" style="color: rgb(7, 201, 255); text-decoration: none;">support@meb-system.com</a></p>
-      <p>Phone: <a href="tel:+1234567890" style="color:rgb(7, 201, 255) rgb(7, 201, 255); text-decoration: none;">+1 (234) 567-890</a></p>
+      <p>Phone: <a href="tel:+1234567890" style="color:rgb(7, 201, 255); text-decoration: none;">+1 (234) 567-890</a></p>
     </div>
     <div style="flex: 1; min-width: 200px; margin-bottom: 15px;">
       <h4 style="margin-bottom: 10px;">Quick Links</h4>
@@ -268,6 +410,15 @@
       const menu = document.getElementById("navMenu");
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
+
+    // Hide nav menu when clicking outside (for mobile)
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById("navMenu");
+      const button = document.querySelector('.profile-button');
+      if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+        menu.style.display = "none";
+      }
+    });
   </script>
 
 </body>
