@@ -18,6 +18,7 @@ class Event(models.Model):
     start_time = models.TimeField(null=True,default=default_time)
     end_time = models.TimeField(null=True,default=default_time)
     attendance_count = models.IntegerField(null=True)
+    capacity=models.IntegerField(null=True)
 
 
     def __str__(self):
