@@ -41,6 +41,7 @@ def add_event(request):
         image_file =request.FILES.get('image')
         start_time = request.POST['start_time']
         end_time = request.POST['end_time']
+        capacity=request.POST['capacity']
 
         s_time = datetime.strptime(start_time, '%H:%M')
         e_time = datetime.strptime(end_time, '%H:%M')
@@ -55,7 +56,8 @@ def add_event(request):
                 image=image_data,
                 start_time=s_time.time(),
                 end_time=e_time.time(),
-                attendance_count=0
+                attendance_count=0,
+                capacity=capacity
             )
             event.save()
 
@@ -87,6 +89,7 @@ def update_event_page(request):
             start_time = request.POST['start_time']
             end_time = request.POST['end_time']
 
+            capacity = request.POST['capacity']
 
             eventID = request.GET.get('eventID')
             eventImage=request.FILES.get('eventImage')
@@ -109,6 +112,7 @@ def update_event_page(request):
             event.date=date_obj
             event.location=location
             event.description=description
+            event.capacity=capacity
 
             event.save()
             addAction(admin_id=admin, record_type="Updated an event", icon="bi bi-calendar")
@@ -166,11 +170,24 @@ def update_events(request):
 def events_home(request):
     Event.objects.filter(date__lt=date.today()).delete() #automatically delete events
 
-    events= Event.objects.all()
-    events=events.order_by('date')
-    initials = request.session.get("initials")
+    stud_id=request.session.get('stud_id')
+    events = Event.objects.all()
 
-    return render(request, 'events/events_home.html',{'events':events,'initials':initials})
+    rsvp_event_ids = list(RSVP.objects.filter(guest_studentnumber=stud_id).values_list('event_id', flat=True))
+    rsvp_event_ids = [int(eid) for eid in rsvp_event_ids]
+
+    initials=request.session.get("initials")
+
+    events=events.order_by('date')
+
+    context = {
+        'events': events,
+        'rsvp_event_ids': rsvp_event_ids,
+        'initials' : initials
+    }
+
+
+    return render(request, 'events/events_home.html',context)
 
 def event_details(request):
     admin_id = request.session.get('admin_id')
@@ -289,6 +306,7 @@ def rsvp_event(request):
                             CALL public.add_rsvp(%s, %s, %s,%s) 
                         """, [event_id, guest_name, guest_student_no,guest_surname])
                 messages.success(request, "RSVP Successful, check your email or email spam")
+                return redirect(f"{reverse('events_home')}")
             except IntegrityError:
                 messages.error(request, "Database Error! Could not save RSVP.")
             return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")

@@ -1,6 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+<!-- Alerts -->
+{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,7 +95,7 @@
         }
 
         .rsvp-btn {
-            background: #1286ad;
+            background-color: #1286ad;
             color: white;
             border: none;
             padding: 10px 25px;
@@ -101,6 +108,23 @@
             align-self: flex-start;
             margin-top: auto;
         }
+
+        .rsvp-now {
+            background-color: green; /* 🟢 */
+        }
+
+    .rsvp-already {
+         background-color: orange; /* 🟡 */
+        pointer-events: none; /* Disable clicks */
+        opacity: 0.7;
+    }
+
+    .rsvp-full {
+        background-color: red; /* 🔴 */
+        pointer-events: none; /* Disable clicks */
+        opacity: 0.7;
+    }
+
         .rsvp-btn:hover {
             background: #0f6d8a;
             transform: translateY(-2px);
@@ -137,7 +161,27 @@
                             <p>{{ event.location }}</p>
                             <p>{{ event.start_time }}</p>
                             <p> {{ event.date|date:"M d" }}</p>
-                            <a href="{% url 'rsvp_event' %}?eventID={{event.event_id}}" class="rsvp-btn">RSVP Now</a>
+                            <a href="{% url 'rsvp_event' %}?eventID={{ event.event_id }}"
+   class="rsvp-btn
+          {% if event.attendance_count >= event.capacity %}
+              rsvp-full
+          {% elif event.event_id in rsvp_event_ids %}
+              rsvp-already
+          {% else %}
+              rsvp-now
+          {% endif %}"
+   {% if event.attendance_count >= event.capacity or event.event_id in rsvp_event_ids %}
+      aria-disabled="true" onclick="return false;"
+   {% endif %}>
+    {% if event.attendance_count >= event.capacity %}
+        RSVP Full
+    {% elif event.event_id in rsvp_event_ids %}
+        Already RSVP'd
+    {% else %}
+        RSVP Now
+    {% endif %}
+</a>
+
                         </div>
                     </div>
                 </div>
@@ -151,5 +195,6 @@
             {% endif %}
         </div>
     </main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
