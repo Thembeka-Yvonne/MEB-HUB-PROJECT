@@ -57,8 +57,13 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .main-container, .row, .col-lg-6, .col-xl-4 {
+            position: static !important;
+        }
+
         .events-heading {
-             text-align: center;
+            text-align: center;
             margin: 30px 0;
             color: #1286ad;
             font-weight: 600;
@@ -72,11 +77,6 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .event-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .event-title {
@@ -87,12 +87,23 @@
 
         .event-image {
          width: 100%;
-        height: auto;
+        height: 100%;
         border-radius: 10px 10px 0 0;
         display: block;
-        aspect-ratio: 16/9;
+        aspect-ratio: 10/9;
         object-fit: contain;
         }
+
+        .event-content p {
+            margin-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+
 
         .rsvp-btn {
             background-color: #1286ad;
@@ -113,22 +124,21 @@
             background-color: green; /* 🟢 */
         }
 
-    .rsvp-already {
-         background-color: orange; /* 🟡 */
-        pointer-events: none; /* Disable clicks */
-        opacity: 0.7;
-    }
+        .rsvp-already {
+            background-color: orange; /* 🟡 */
+            pointer-events: none; /* Disable clicks */
+        }
 
-    .rsvp-full {
-        background-color: red; /* 🔴 */
-        pointer-events: none; /* Disable clicks */
-        opacity: 0.7;
-    }
+        .rsvp-full {
+            background-color: red; /* 🔴 */
+            pointer-events: none; /* Disable clicks */
+        }
 
         .rsvp-btn:hover {
             background: #0f6d8a;
             transform: translateY(-2px);
         }
+
         @media screen and (max-width: 768px) {
             .events-heading {
                 font-size: 2.5rem;
@@ -157,31 +167,42 @@
                     <div class="event-card">
                         <img src="{% url 'serve_image' event.event_id %}" alt="{{ event.description }}" class="event-image">
                         <div class="p-3">
-                            <h3 class="event-title">{{ event.description }}</h3>
-                            <p>{{ event.location }}</p>
-                            <p>{{ event.start_time }}</p>
-                            <p> {{ event.date|date:"M d" }}</p>
+                            <div class="event-content">
+                            <h3 class="event-title">{{ event.title }}</h3>
+                            <p><b>{{ event.location }}</b></p>
+                            <p><b>{{ event.start_time }}</b></p>
+                            <p><b>{{ event.date|date:"M d" }}</b></p>
+                            <p id="desc-{{ event.id }}">
+                             {% with desc_words=event.description.split %}
+                             {{ desc_words|slice:":20"|join:" " }}
+                             {% if desc_words|length > 20 %}
+                                <span id="more-{{ event.event_id }}" class="hidden">{{ desc_words|slice:"20:"|join:" " }}</span>
+                                <a href="javascript:void(0);" class="read-more-link" id="link-{{ event.event_id }}" onclick="toggleMore({{ event.event_id }})" style="#1286ad: blue; text-decoration: underline;">Read More</a>
+                            {% endif %}
+                            {% endwith %}
+                            </p>
                             <a href="{% url 'rsvp_event' %}?eventID={{ event.event_id }}"
-   class="rsvp-btn
-          {% if event.attendance_count >= event.capacity %}
-              rsvp-full
-          {% elif event.event_id in rsvp_event_ids %}
-              rsvp-already
-          {% else %}
-              rsvp-now
-          {% endif %}"
-   {% if event.attendance_count >= event.capacity or event.event_id in rsvp_event_ids %}
-      aria-disabled="true" onclick="return false;"
-   {% endif %}>
-    {% if event.attendance_count >= event.capacity %}
-        RSVP Full
-    {% elif event.event_id in rsvp_event_ids %}
-        Already RSVP'd
-    {% else %}
-        RSVP Now
-    {% endif %}
-</a>
+                                class="rsvp-btn
+                                {% if event.attendance_count >= event.capacity %}
+                                     rsvp-full
+                                {% elif event.event_id in rsvp_event_ids %}
+                                    rsvp-already
+                                {% else %}
+                                    rsvp-now
+                                {% endif %}"
+                                {% if event.attendance_count >= event.capacity or event.event_id in rsvp_event_ids %}
+                                    aria-disabled="true" onclick="return false;"
+                                {% endif %}>
+                                {% if event.attendance_count >= event.capacity %}
+                                    RSVP Full
+                                {% elif event.event_id in rsvp_event_ids %}
+                                     Already RSVP'd
+                                {% else %}
+                                     RSVP Now
+                                {% endif %}
+                            </a>
 
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -195,6 +216,20 @@
             {% endif %}
         </div>
     </main>
+    <script>
+function toggleMore(id) {
+  const moreText = document.getElementById(`more-${id}`);
+  const link = document.getElementById(`link-${id}`);
+
+  if (moreText.classList.contains('hidden')) {
+    moreText.classList.remove('hidden');
+    link.textContent = 'Read Less';
+  } else {
+    moreText.classList.add('hidden');
+    link.textContent = 'Read More';
+  }
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
