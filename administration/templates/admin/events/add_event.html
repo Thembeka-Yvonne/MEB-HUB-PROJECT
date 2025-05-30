@@ -166,8 +166,8 @@
               <td><input type="text" name="location" class="form-input" required></td>
             </tr>
             <tr>
-              <td><strong>Description:</strong></td>
-              <td><input type="text" name="description" class="form-input" required></td>
+              <td><strong>Titile:</strong></td>
+              <td><input type="text" name="title" class="form-input" required></td>
             </tr>
             <tr>
               <td><strong>Start time:</strong></td>
@@ -178,8 +178,12 @@
               <td><input type="time" name="end_time" required></td>
             </tr>
             <tr>
-              <td><strong>Campus:</strong></td>
-              <td>{{admin.campus_id.campus_name}}</td>
+              <td><strong>Capacity:</strong></td>
+              <td><input type="number" name="capacity" class="form-input" required></td>
+            </tr>
+            <tr>
+              <td><strong>Description:</strong></td>
+              <td><textarea id="description" name="description" rows="10" cols="40" placeholder="Enter event description..."  class="form-input" ></textarea></td>
             </tr>
             <tr>
               <td colspan="2">

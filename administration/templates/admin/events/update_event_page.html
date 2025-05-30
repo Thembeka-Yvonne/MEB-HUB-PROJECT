@@ -227,9 +227,9 @@
             <td><input type="text" id="date" name="date" required="" class="form-control" value="{{ event.date }}"></td>
           </tr>
           <tr>
-            <td><label for="description" class="form-label"><strong>Event Description:</strong></label></td>
+            <td><label for="title" class="form-label"><strong>Event Title:</strong></label></td>
             <td>
-                <input type="text" id="description" name="description" required  class="form-control" value="{{ event.description }}">
+                <input type="text" id="title" name="title" required  class="form-control" value="{{ event.title }}">
             </td>
           </tr>
           <tr>
@@ -246,6 +246,14 @@
             <td><label for="end_time" class="form-label"><strong>End Time:</strong></label></td>
             <td><input type="time" id="end_time" name="end_time" class="form-control" value="{{ event.end_time|time:'H:i' }}"></td>
           </tr>
+            <tr>
+              <td><strong>Capacity:</strong></td>
+              <td><input type="number" id="capacity" name="capacity" required class="form-control" value="{{ event.capacity}}"></td>
+            </tr>
+            <tr>
+              <td><strong>Description:</strong></td>
+              <td><textarea id="description" name="description" rows="10" cols="40" class="form-control" required>{{event.description}}</textarea></td>
+            </tr>
           <tr>
             <td colspan="2">
               <label class="form-label"><strong>Event Image:</strong></label>

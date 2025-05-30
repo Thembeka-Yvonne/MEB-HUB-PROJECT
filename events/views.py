@@ -42,6 +42,7 @@ def add_event(request):
         start_time = request.POST['start_time']
         end_time = request.POST['end_time']
         capacity=request.POST['capacity']
+        title=request.POST['title']
 
         s_time = datetime.strptime(start_time, '%H:%M')
         e_time = datetime.strptime(end_time, '%H:%M')
@@ -57,7 +58,8 @@ def add_event(request):
                 start_time=s_time.time(),
                 end_time=e_time.time(),
                 attendance_count=0,
-                capacity=capacity
+                capacity=capacity,
+                title=title
             )
             event.save()
 
@@ -91,6 +93,8 @@ def update_event_page(request):
 
             capacity = request.POST['capacity']
 
+            title= request.POST['title']
+
             eventID = request.GET.get('eventID')
             eventImage=request.FILES.get('eventImage')
             #retrieve the data in the fields and create an event object
@@ -113,6 +117,7 @@ def update_event_page(request):
             event.location=location
             event.description=description
             event.capacity=capacity
+            event.title=title
 
             event.save()
             addAction(admin_id=admin, record_type="Updated an event", icon="bi bi-calendar")

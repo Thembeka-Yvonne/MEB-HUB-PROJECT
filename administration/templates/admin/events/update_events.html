@@ -152,7 +152,7 @@
                                 <input class="form-check-input" type="radio" name="event_id" id="event{{event.event_id}}" value="{{event.event_id}}" required>
                                 <label class="form-check-label" for="event{{event.event_id}}">
                                     <div class="event-item">
-                                        <h5 class="mb-2"><i class="bi bi-calendar-date me-2"></i><b>{{ event.description }}</b></h5>
+                                        <h5 class="mb-2"><i class="bi bi-calendar-date me-2"></i><b>{{ event.title }}</b></h5>
                                         <p class="mb-1"><i class="bi bi-geo-alt me-2"></i>Location: {{ event.location }}</p>
                                         <p class="mb-1"><i class="bi bi-clock me-2"></i>Date: {{ event.date }}</p>
                                         {% if event.start_time %}
@@ -165,7 +165,7 @@
                     </div>
                 {% else %}
                     <div class="alert alert-info text-center">
-                        <i class="bi bi-info-circle-fill me-2"></i>No events found for this admin.
+                        <i class="bi bi-info-circle-fill me-2"></i>No events found.
                     </div>
                 {% endif %}
 
