@@ -10,7 +10,7 @@ def default_time():
 
 class Event(models.Model):
     event_id = models.BigAutoField(primary_key=True)
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=1500)
     date = models.DateField()
     image = models.BinaryField(editable=True,null=False,default=b'\x00')
     location = models.CharField(max_length=255)
@@ -19,6 +19,8 @@ class Event(models.Model):
     end_time = models.TimeField(null=True,default=default_time)
     attendance_count = models.IntegerField(null=True)
     capacity=models.IntegerField(null=True)
+    title=models.CharField(max_length=255,null=True)
+
 
 
     def __str__(self):
