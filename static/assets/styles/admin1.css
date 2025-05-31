@@ -158,6 +158,8 @@
             display: grid;
             grid-template-columns: repeat(2,1fr);
             gap: 20px;
+            padding-right: 20px;
+            padding-left: 20px;
             margin-bottom: 30px;
             width:100%;
         }
@@ -169,7 +171,9 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            min-height: 150px; /* Ensures consistent height */
+            min-height: 150px;
+            padding-right: 20px;
+            padding-left: 20px;
         }
 
         .stat-card-header {
@@ -250,13 +254,15 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
+             padding-left: 20px;
         }
 
         .dashboard-section {
            background: white;
             border-radius: 10px;
             padding: 1.5rem;
-             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding-left: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .section-header {

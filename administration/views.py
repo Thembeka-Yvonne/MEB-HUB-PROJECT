@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
 from datetime import date
 from django.forms import Form
-from events.models import Event
+from events.models import Event, ArchivedEvents
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.db.models import Count
@@ -15,6 +15,11 @@ from reportlab.pdfgen import canvas
 from docx import Document
 import csv
 from io import BytesIO
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+
 
 
 # Create your views here.
@@ -103,15 +108,136 @@ def add_bus_schedule(request,code):
     })
   
 def events_menu(request):
-  Event.objects.filter(date__lt=date.today()).delete()  # automatically delete events
+  expired_events = Event.objects.filter(date__lt=date.today()) #automatically delete events
+  for event in expired_events:
+        event.delete()
+
   admin_id = request.session.get('admin_id')
   initials = request.session.get("initials")
+  total_upcoming_events = Event.objects.count()
+  total_past_events = ArchivedEvents.objects.count()
+
+  filtered_events=None
+  start_date=request.GET.get('start_date')
+  end_date=request.GET.get('end_date')
+  if start_date and end_date:
+      filtered_events=Event.objects.filter(date__range=[start_date,end_date])
+
+  filtered_events_admin = Event.objects.filter(admin_id_id=admin_id)
 
   if admin_id is None:
     return redirect('admin_home')  # or handle expired session
 
   admin = Admin.objects.select_related('campus_id').get(admin_id=admin_id)
-  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials})
+  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials,'total_upcoming_events': total_upcoming_events,
+        'total_past_events': total_past_events,
+        'filtered_events': filtered_events,'filtered_events_admin':filtered_events_admin})
+
+def download_filtered_events(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    events = Event.objects.filter(date__range=[start_date, end_date])
+
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{start_date}_to_{end_date}_events.pdf"'
+
+    # Create the PDF object
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    y = height - inch
+
+    # Title
+    p.setFont("Helvetica-Bold", 16)
+    p.drawCentredString(width / 2.0, y, f"Filtered Events from {start_date} to {end_date}")
+    y -= 0.5 * inch
+
+    # Table Header
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, y, "Event Title")
+    p.drawString(3 * inch, y, "Date")
+    p.drawString(4.5 * inch, y, "Location")
+    y -= 0.3 * inch
+
+    # Table Rows
+    p.setFont("Helvetica", 11)
+    for event in events:
+      if y < inch:  # Start a new page if too low
+        p.showPage()
+        y = height - inch
+      p.drawString(inch, y, event.title)
+      p.drawString(3 * inch, y, str(event.date))
+      p.drawString(4.5 * inch, y, event.location)
+      y -= 0.25 * inch
+
+      # No events message
+      if not events:
+        p.drawString(inch, y, "No events found for the selected date range.")
+
+    p.showPage()
+    p.save()
+
+    return response
+
+
+def download_filtered_events_csv(request):
+  start_date = request.GET.get('start_date')
+  end_date = request.GET.get('end_date')
+  events = Event.objects.filter(date__range=[start_date, end_date])
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = 'attachment; filename="Filtered Events from {start_date} to {end_date}.csv"'
+  writer = csv.writer(response)
+  writer.writerow(['Title', 'Date', 'Location'])
+  for event in events:
+    writer.writerow([event.title, event.date, event.location])
+  return response
+
+def download_filtered_events_admin(request):
+  admin_id = request.session.get('admin_id')
+  events = Event.objects.filter(admin_id_id=admin_id)
+  admin=Admin.objects.get(admin_id=admin_id)
+
+  # Create PDF response
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="events_by_{admin_id}.pdf"'
+
+  # Create the PDF object
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - inch
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawCentredString(width / 2.0, y, f" Events Posted by {admin.name} {admin.surname}({admin.admin_id})")
+  y -= 0.5 * inch
+
+  # Table Header
+  p.setFont("Helvetica-Bold", 12)
+  p.drawString(inch, y, "Event Title")
+  p.drawString(3 * inch, y, "Date")
+  p.drawString(4.5 * inch, y, "Location")
+  y -= 0.3 * inch
+
+  # Table Rows
+  p.setFont("Helvetica", 11)
+  for event in events:
+    if y < inch:  # Start a new page if too low
+      p.showPage()
+      y = height - inch
+    p.drawString(inch, y, event.title)
+    p.drawString(3 * inch, y, str(event.date))
+    p.drawString(4.5 * inch, y, event.location)
+    y -= 0.25 * inch
+
+    # No events message
+    if not events:
+      p.drawString(inch, y, "No events found for the selected date range.")
+
+  p.showPage()
+  p.save()
+
+  return response
 
 def addAction(admin_id: int,record_type: str,icon: str):
   action = Admin_Action(action_type=record_type,admin_id=admin_id, icon=icon,
