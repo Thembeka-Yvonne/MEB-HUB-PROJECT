@@ -252,7 +252,11 @@
             </tr>
             <tr>
               <td><strong>Description:</strong></td>
-              <td><textarea id="description" name="description" rows="10" cols="40" class="form-control" required>{{event.description}}</textarea></td>
+              <td><textarea id="description" name="description" rows="10" cols="40" class="form-control" required maxlength="1500">{{event.description}}</textarea></td>
+            </tr>
+            <tr>
+                <td></td>
+               <td><p id="charCount">1500 characters remaining</p></td>
             </tr>
           <tr>
             <td colspan="2">
@@ -287,29 +291,36 @@
 
       </form>
 
+<script>
+    const textarea = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
 
-           <!-- Bootstrap JS Bundle with Popper -->
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    textarea.addEventListener('input', () => {
+    const remaining = textarea.maxLength - textarea.value.length;
+    charCount.textContent = `${remaining} characters remaining`;
+    });
+</script>
+ <!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-                 <script>
-                    function previewEventImg() {
-                    const fileInput = document.getElementById('customFile');
-                    const previewImage = document.getElementById('previewImage');
-                    const uploadLabel = document.querySelector('.upload-label');
+ <script>
+     function previewEventImg() {
+     const fileInput = document.getElementById('customFile');
+     const previewImage = document.getElementById('previewImage');
+     const uploadLabel = document.querySelector('.upload-label');
 
-                    if (fileInput.files && fileInput.files[0]) {
-                        const reader = new FileReader();
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+      previewImage.src = e.target.result;
+      previewImage.style.display = 'block';
+      if (uploadLabel) uploadLabel.style.display = 'none';
+     }
 
-                        reader.onload = function(e) {
-                        previewImage.src = e.target.result;
-                        previewImage.style.display = 'block';
-                        if (uploadLabel) uploadLabel.style.display = 'none';
-                        }
-
-                         reader.readAsDataURL(fileInput.files[0]);
-                        }
-                    }
-                </script>
+     reader.readAsDataURL(fileInput.files[0]);
+     }
+    }
+</script>
 
 
 
