@@ -217,10 +217,10 @@ def generate_event_csv(request, event_id):
 
     # Create CSV response
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.csv"'
+    response['Content-Disposition'] = f'attachment; filename="event_{event.title}_report.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Event Description', event.description])
+    writer.writerow(['Event Title', event.title])
     writer.writerow(['Date', event.date])
     writer.writerow(['Attendance Count', event.attendance_count])
     writer.writerow([])
@@ -240,14 +240,14 @@ def generate_event_pdf(request, event_id):
 
         # Create PDF response
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="event_{event.title}_report.pdf"'
 
         p = canvas.Canvas(response, pagesize=A4)
         width, height = A4
         y = height - 50
 
         p.setFont("Helvetica-Bold", 16)
-        p.drawString(50, y, f"Event Report: {event.description}")
+        p.drawString(50, y, f"Event Report: {event.title}")
         y -= 30
 
         p.setFont("Helvetica", 12)
