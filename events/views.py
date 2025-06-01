@@ -173,7 +173,10 @@ def update_events(request):
 
 
 def events_home(request):
-    Event.objects.filter(date__lt=date.today()).delete() #automatically delete events
+    expired_events = Event.objects.filter(date__lt=date.today()) #automatically delete events
+    for event in expired_events:
+        event.delete()
+
 
     stud_id=request.session.get('stud_id')
     events = Event.objects.all()
