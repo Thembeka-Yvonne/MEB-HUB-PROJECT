@@ -38,5 +38,6 @@ urlpatterns = [
     path('full-report/csv/', views.full_report_csv, name='full_report_csv'),
     path('download_filtered_events', views.download_filtered_events, name='download_filtered_events'),
     path('download_filtered_events_csv', views.download_filtered_events_csv, name='download_filtered_events_csv'),
-    path('download_filtered_events_admin',views.download_filtered_events_admin,name='download_filtered_events_admin')
+    path('download_filtered_events_admin',views.download_filtered_events_admin,name='download_filtered_events_admin'),
+    path('events_stats/',views.events_stats,name='events_stats')
 ]

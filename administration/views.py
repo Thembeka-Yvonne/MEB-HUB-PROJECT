@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from login.models import Campus,Admin,Student
 from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
+from events.models import RSVP
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
 from datetime import date
@@ -19,11 +20,13 @@ from django.http import HttpResponse
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
-
+from django.db.models import Sum
+import json
 
 
 # Create your views here.
 def admin_home(request):
+ if 'admin_id' in request.session:
   admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
   today = timezone.localdate()
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
@@ -38,6 +41,8 @@ def admin_home(request):
   }
   return render(request,"admin/admin.html",context
   )
+ else:
+   return redirect('account:login')
 
 #campus functionalilities
 
@@ -694,3 +699,47 @@ def full_report_csv(request):
     writer.writerow(["", f"{action.admin_id.name}: {action.action_type} at {action.datetime}"])
 
   return response
+
+def events_stats(request):
+  initials=request.session.get("initials")
+
+  #line graph values
+  today = date.today()
+  dates = [today + timedelta(days=i) for i in range(7)]  # Next 7 days
+  labels = [d.strftime("%Y-%m-%d") for d in dates]
+
+  rsvp_counts = (RSVP.objects
+                 .annotate(day=TruncDate('done_at'))  # Replace 'timestamp' with your RSVP model datetime field
+                 .values('day')
+                 .annotate(count=Count('id'))
+                 .order_by('day'))
+  # Convert queryset to a dictionary {date: count}
+  rsvp_data = {entry['day']: entry['count'] for entry in rsvp_counts}
+
+  # Fill data list in correct order
+  data = [rsvp_data.get(d, 0) for d in dates]
+  end_date=today + timedelta(days=7)
+  total_attendees = RSVP.objects.filter(done_at__date__gte=today,done_at__date__lte=end_date).count()
+
+  #bar graph values
+  today = now().date()
+  month_start = today.replace(day=1)
+  next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+  events_data = Event.objects.filter(
+    date__gte=month_start,
+    date__lt=next_month
+  )
+
+  event_names = [event.title for event in events_data]
+  rsvp_counts = [event.attendance_count for event in events_data]
+
+  context = {
+    'labels': labels,
+    'data': data,
+    'initials':initials,
+    'total_attendees':total_attendees,
+    'event_names': json.dumps(event_names),  # Convert to JSON
+    'rsvp_counts': json.dumps(rsvp_counts),
+  }
+  return render(request,"admin/events/events_stats.html",context)

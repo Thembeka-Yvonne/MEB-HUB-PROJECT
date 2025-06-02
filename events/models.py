@@ -39,10 +39,14 @@ class RSVP(models.Model):
     guest_name = models.CharField(max_length=255)
     guest_surname = models.CharField(max_length=255)
     guest_studentnumber = models.CharField(max_length=255)
+    done_at = models.DateTimeField(default=timezone.now)
 
 class ArchivedEvents(models.Model):
     event_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=255, null=True)
     date = models.DateField()
     location = models.CharField(max_length=255)
+
+
+
 
