@@ -15,7 +15,7 @@ from .models import Event, RSVP
 import csv
 from administration.views import addAction
 from login.models import Student
-
+from django.utils import timezone
 
 
 # Create your views here.
@@ -305,14 +305,16 @@ def rsvp_event(request):
         guest_name = request.POST['name']
         guest_surname = request.POST['surname']
         email = request.POST['email']
+        done_at=timezone.now()
+
 
         if is_valid_email(email): #check if the email is valid
             try:
                 with connection.cursor() as cursor:
                     #call the procedure so it can add values into the rsvp table
                     cursor.execute(""" 
-                            CALL public.add_rsvp(%s, %s, %s,%s) 
-                        """, [event_id, guest_name, guest_student_no,guest_surname])
+                            CALL public.add_rsvp(%s, %s, %s,%s,%s) 
+                        """, [event_id, guest_name, guest_student_no,guest_surname,done_at])
                 messages.success(request, "RSVP Successful, check your email or email spam")
                 return redirect(f"{reverse('events_home')}")
             except IntegrityError:

@@ -216,7 +216,7 @@
                 <input type="text" name="eventID" value="{{event.event_id}}" hidden>
                 <input type="text" name="location" id="location" value="{{event.location}}" hidden>
                 <input type="text" name="date" id="date" value="{{event.date}}" hidden>
-                <input type="text" name="description" id="description" value="{{event.description}}" hidden>
+                <input type="text" name="title" id="title" value="{{event.title}}" hidden>
                 <input type="text" name="time" id="time" value="{{time}}" hidden>
 
                 <tr>
@@ -311,13 +311,13 @@
             email: document.getElementById("email").value,
             location: document.getElementById("location").value,
             date: document.getElementById("date").value,
-            description: document.getElementById("description").value,
+            title: document.getElementById("title").value,
             time: document.getElementById("time").value,
             reply_to: document.getElementById("email").value
         };
 
 
-
+        //send  email
         emailjs.send("service_wzfvzxe", "template_4v3dsxn", params)
             .then(function(response) {
                 console.log("Email Sent!", response.status,response.text);
@@ -331,7 +331,7 @@
                 document.getElementById("email").value = "";
                 document.getElementById("location").value="";
                 document.getElementById("date").value="";
-                document.getElementById("description").value="";
+                document.getElementById("title").value="";
                 document.getElementById("time").value="";
             })
              .catch(function(error) {
