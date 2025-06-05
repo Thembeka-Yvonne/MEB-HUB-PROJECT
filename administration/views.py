@@ -128,6 +128,9 @@ def events_menu(request):
   if start_date and end_date:
       filtered_events=Event.objects.filter(date__range=[start_date,end_date])
 
+
+
+
   filtered_events_admin = Event.objects.filter(admin_id_id=admin_id)
 
   if admin_id is None:
@@ -330,7 +333,28 @@ def remove_bus(request):
 
 def user_management(request):
     initials=request.session.get("initials")
-    return render(request,'admin/user_management.html',{"initials":initials})
+    students = Student.objects.all()
+    total_students = students.count()
+    campus_counts = students.values('campus_id__campus_name').annotate(count=Count('studentNumber')).order_by('-count')
+    recent_students = Student.objects.order_by('-login_time')[:5]
+
+    student = None
+    studentEmail = request.GET.get('studentEmail')  # from URL or form
+
+    if studentEmail:
+      try:
+        student = Student.objects.get(studentEmail=studentEmail)
+      except Student.DoesNotExist:
+        student = None
+
+    context={
+      'total_students':total_students,
+      'initials':initials,
+      'campus_counts':campus_counts,
+      'recent_students':recent_students,
+      'student':student
+    }
+    return render(request,'admin/user_management.html',context)
 
 def analytics(request):
     initials=request.session.get("initials")
@@ -743,3 +767,62 @@ def events_stats(request):
     'rsvp_counts': json.dumps(rsvp_counts),
   }
   return render(request,"admin/events/events_stats.html",context)
+
+def download_student_details_pdf(request):
+  studentEmail=request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.pdf"'
+
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - 50
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawString(50, y, "Student Details")
+  y -= 30
+
+  p.line(50, y, 550, y)
+  y -= 25
+
+  p.setFont("Helvetica", 12)
+  p.drawString(50, y, f"Student Number: {student.studentNumber}")
+  y -= 20
+  p.drawString(50, y, f"Name: {student.name}")
+  y -= 20
+  p.drawString(50, y, f"Surname: {student.surname}")
+  y -= 20
+  p.drawString(50, y, f"Email: {student.studentEmail}")
+  y -= 20
+  p.drawString(50, y, f"Campus: {student.campus_id.campus_name if student.campus_id else 'N/A'}")
+  y -= 20
+  p.drawString(50, y,
+               f"Last Login Time: {student.login_time.strftime('%Y-%m-%d') if student.login_time else 'N/A'}")
+
+  p.save()
+  return response
+
+def download_student_details_csv(request):
+  studentEmail = request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.csv"'
+
+  writer = csv.writer(response)
+  # Header row
+  writer.writerow(['Student Number', 'Name', 'Surname', 'Email', 'Campus', 'Date Registered'])
+
+  # Data row
+  writer.writerow([
+    student.studentNumber,
+    student.name,
+    student.surname,
+    student.studentEmail,
+    student.campus_id.campus_name if student.campus_id else "N/A",
+    student.login_time.strftime('%Y-%m-%d') if student.login_time else "N/A"
+  ])
+
+  return response

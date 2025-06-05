@@ -39,5 +39,7 @@ urlpatterns = [
     path('download_filtered_events', views.download_filtered_events, name='download_filtered_events'),
     path('download_filtered_events_csv', views.download_filtered_events_csv, name='download_filtered_events_csv'),
     path('download_filtered_events_admin',views.download_filtered_events_admin,name='download_filtered_events_admin'),
-    path('events_stats/',views.events_stats,name='events_stats')
+    path('events_stats/',views.events_stats,name='events_stats'),
+    path('download_student_details_pdf',views.download_student_details_pdf,name='download_student_details_pdf'),
+    path('download_student_details_csv',views.download_student_details_csv,name='download_student_details_csv')
 ]

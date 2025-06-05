@@ -319,7 +319,7 @@ def rsvp_event(request):
                 return redirect(f"{reverse('events_home')}")
             except IntegrityError:
                 messages.error(request, "Database Error! Could not save RSVP.")
-            return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
+            return redirect(f"{reverse('events_home')}")
         else:
             messages.success(request, "Invalid email!! Try again")
             return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
