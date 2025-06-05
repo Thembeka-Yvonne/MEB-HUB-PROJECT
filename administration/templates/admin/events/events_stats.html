@@ -166,6 +166,7 @@
         <div class="nav-title">M.E.B Admin</div>
         <div class="nav-menu" id="navMenu">
             <a href="{% url 'admin_home' %}">Dashboard</a>
+            <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'events_menu' %}">Events Management</a>
             <a href="{% url 'bus_menu' %}">Bus Management</a>
             <a href="{% url 'analytics' %}">Analytics</a>
@@ -181,7 +182,7 @@
           <h1>Events statistics</h1>
         </div>
           <div class="chart-section">
-             <h3 class="chart-title">Number of RSVPs over next 7 days</h3>
+             <h2 class="chart-title">Number of RSVPs over next 7 days</h2>
             <div class="chart-container">
                 <canvas id="attendeesChart" ></canvas>
                 <div class="summary-card">
@@ -194,7 +195,7 @@
             </div>
           </div>
           <div class="chart-section">
-              <h3 class="chart-title">Number of RSVPs of each event this month</h3>
+              <h2 class="chart-title">Number of RSVPs of each event this month</h2>
             <div class="chart-container">
               <canvas id="eventsBarChart" ></canvas>
             </div>
