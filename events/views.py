@@ -16,6 +16,7 @@ import csv
 from administration.views import addAction
 from login.models import Student
 from django.utils import timezone
+from django.db import models
 
 
 # Create your views here.
@@ -145,7 +146,7 @@ def delete_event(request):
     event_id=request.GET.get("eventID")
     if request.method == 'POST':
         event = get_object_or_404(Event, event_id=event_id)
-        event.delete()
+        models.Model.delete(Event.objects.get(event_id=event_id))
         messages.success(request, "Event Deleted")
         addAction(admin_id=admin, record_type="Deleted an event", icon="bi bi-x-circle")
 
