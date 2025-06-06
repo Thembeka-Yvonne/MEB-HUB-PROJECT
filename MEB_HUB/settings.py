@@ -79,31 +79,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'meb-hub-database',
-#         'USER': 'postgres',
-#         'PASSWORD': 'nhlamulo25',
-#         'HOST': 'localhost',
-#         'PORT': '5432'
-#     }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mebhubdatabase',  # Database name extracted from the URL
-        'USER': 'mebhubdatabase',  # Database user extracted from the URL
-        'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
-        'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
-        'PORT': '5432',  # Default PostgreSQL port,
-    }
+  'default': {
+     'ENGINE': 'django.db.backends.postgresql',
+      'NAME': 'meb-hub-database',
+      'USER': 'postgres',
+      'PASSWORD': 'Bembe@ns3',
+     'HOST': 'localhost',
+      'PORT': '5432'
+  }
 }
+
+#DATABASES = {
+#      'default': {     'ENGINE': 'django.db.backends.postgresql',
+#    'NAME': 'mebhubdatabase',  # Database name extracted from the URL
+#    'USER': 'mebhubdatabase',  # Database user extracted from the URL
+#    'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
+#    'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
+#    'PORT': '5432',  # Default PostgreSQL port,
+# }
+#}
 
 
 # Password validation
@@ -135,6 +136,10 @@ TIME_ZONE = 'Africa/Johannesburg'
 USE_I18N = True
 
 USE_TZ = True
+
+TWILIO_ACCOUNT_SID = 'your_account_sid'
+TWILIO_AUTH_TOKEN = 'your_auth_token'
+TWILIO_PHONE_NUMBER = '+27234567890'
 
 
 # Static files (CSS, JavaScript, Images)

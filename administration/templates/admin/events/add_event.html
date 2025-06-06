@@ -140,10 +140,6 @@
         <button class="profile-button" onclick="toggleMenu()">
             <span id="user-initials">{{initials}}</span>
         </button>
-        <div class="nav-menu" id="navMenu">
-            <a href="#"><i class="bi bi-person-circle"></i> Profile</a>
-            <a href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-        </div>
     </nav>
       <div class="dashboard-container">
     <div class="main-content">
@@ -196,7 +192,7 @@
                   <div class="size-info" id="sizeInfo">Original size: 0 x 0</div>
                 </div>
                 <label class="btn-upload" for="customFile">Choose Image</label>
-                <input type="file" name="image" onchange="previewEventImg()" id="customFile" hidden>
+                <input type="file" name="image" onchange="previewEventImg()" id="customFile" hidden required>
               </td>
             </tr>
           </table>

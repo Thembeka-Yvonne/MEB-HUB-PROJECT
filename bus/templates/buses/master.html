@@ -6,6 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'assets/styles/bus_schedule.css' %}">
+    <style>
+         .report-instruction {
+             display: block;
+      text-align: center;
+      color: #3498db;
+      margin-top: 1rem;
+        }
+
+         .back-link {
+      display: block;
+      text-align: center;
+      color: #3498db;
+      margin-top: 1rem;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    </style>
 </head>
 <body>
     {% block content %}

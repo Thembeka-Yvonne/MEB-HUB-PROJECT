@@ -30,8 +30,9 @@
                 <input class="btn-style" type="submit" value="DOWNLOAD SCHEDULE">
                 <input type="hidden" name="code" value="{{schedule_code}}">
             </form>
+             <a href="{% url 'home' %}" class="back-link">← Back to Bus Menu</a>
         {% else %}
              <h2 style="text-align: center;margin-top: 40px;">No Bus Schedule</h2>
         {% endif %}
-        
+
 {% endblock %}

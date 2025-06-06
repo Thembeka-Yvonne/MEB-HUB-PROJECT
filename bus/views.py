@@ -17,10 +17,15 @@ import io
 
 # Create your views here.s
 def home(request):
-    list = ScheduleCode.objects.all()
-    return render(request,"buses/home.html",{
-        "list": list
+    stud = Student.objects.get(studentNumber=request.session['stud_id'])
+    initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
+    schedule_list = ScheduleCode.objects.all()
+
+    return render(request, "buses/home.html", {
+        "list": schedule_list,
+        "initials": initials
     })
+
 
 def view_schedule(request,schedule_code):
 

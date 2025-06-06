@@ -27,8 +27,7 @@
                 <li><a href="{% url 'admin_home' %}" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li><a href="{% url 'bus_menu' %}"><i class="bi bi-bus-front"></i> Bus Management</a></li>
                 <li><a href="{% url 'events_menu' %}"><i class="bi bi-calendar-event"></i> Events Management</a></li>
-                <li><a href="{% url 'user_management' %}"><i class="bi bi-people-fill"></i> User Management</a></li>
-                <li><a href="#"><i class="bi bi-bar-chart-line"></i> Analytics</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a></li>
                 <li><a href="{% url 'account:landing' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a></li>
             </ul>
         </div>
@@ -41,7 +40,7 @@
             <div class="container">
                 <a class="card" href="{% url 'add_event' %}">ADD EVENT</a>
                 <a class="card" href="{% url 'update_events' %} ">UPDATE EVENT</a>
-                <a class="card" href="{% url 'event_details' %} ">EVENT DETAILS</a>
+                <a class="card" href="{% url 'event_details' %} ">EVENT REPORT</a>
             </div>
         </div>
     </div>
