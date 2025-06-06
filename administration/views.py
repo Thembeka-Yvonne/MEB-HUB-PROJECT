@@ -2,11 +2,12 @@ from django.shortcuts import render,redirect
 from login.models import Campus,Admin,Student
 from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
+from events.models import RSVP
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
 from datetime import date
 from django.forms import Form
-from events.models import Event
+from events.models import Event, ArchivedEvents
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.db.models import Count
@@ -15,10 +16,17 @@ from reportlab.pdfgen import canvas
 from docx import Document
 import csv
 from io import BytesIO
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from django.db.models import Sum
+import json
 
 
 # Create your views here.
 def admin_home(request):
+ if 'admin_id' in request.session:
   admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
   today = timezone.localdate()
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
@@ -33,6 +41,8 @@ def admin_home(request):
   }
   return render(request,"admin/admin.html",context
   )
+ else:
+   return redirect('account:login')
 
 #campus functionalilities
 
@@ -135,15 +145,139 @@ def add_bus_schedule(request, code):
 
   
 def events_menu(request):
-  Event.objects.filter(date__lt=date.today()).delete()  # automatically delete events
+  expired_events = Event.objects.filter(date__lt=date.today()) #automatically delete events
+  for event in expired_events:
+        event.delete()
+
   admin_id = request.session.get('admin_id')
   initials = request.session.get("initials")
+  total_upcoming_events = Event.objects.count()
+  total_past_events = ArchivedEvents.objects.count()
+
+  filtered_events=None
+  start_date=request.GET.get('start_date')
+  end_date=request.GET.get('end_date')
+  if start_date and end_date:
+      filtered_events=Event.objects.filter(date__range=[start_date,end_date])
+
+
+
+
+  filtered_events_admin = Event.objects.filter(admin_id_id=admin_id)
 
   if admin_id is None:
     return redirect('admin_home')  # or handle expired session
 
   admin = Admin.objects.select_related('campus_id').get(admin_id=admin_id)
-  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials})
+  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials,'total_upcoming_events': total_upcoming_events,
+        'total_past_events': total_past_events,
+        'filtered_events': filtered_events,'filtered_events_admin':filtered_events_admin})
+
+def download_filtered_events(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    events = Event.objects.filter(date__range=[start_date, end_date])
+
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{start_date}_to_{end_date}_events.pdf"'
+
+    # Create the PDF object
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    y = height - inch
+
+    # Title
+    p.setFont("Helvetica-Bold", 16)
+    p.drawCentredString(width / 2.0, y, f"Filtered Events from {start_date} to {end_date}")
+    y -= 0.5 * inch
+
+    # Table Header
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, y, "Event Title")
+    p.drawString(3 * inch, y, "Date")
+    p.drawString(4.5 * inch, y, "Location")
+    y -= 0.3 * inch
+
+    # Table Rows
+    p.setFont("Helvetica", 11)
+    for event in events:
+      if y < inch:  # Start a new page if too low
+        p.showPage()
+        y = height - inch
+      p.drawString(inch, y, event.title)
+      p.drawString(3 * inch, y, str(event.date))
+      p.drawString(4.5 * inch, y, event.location)
+      y -= 0.25 * inch
+
+      # No events message
+      if not events:
+        p.drawString(inch, y, "No events found for the selected date range.")
+
+    p.showPage()
+    p.save()
+
+    return response
+
+
+def download_filtered_events_csv(request):
+  start_date = request.GET.get('start_date')
+  end_date = request.GET.get('end_date')
+  events = Event.objects.filter(date__range=[start_date, end_date])
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = 'attachment; filename="Filtered Events from {start_date} to {end_date}.csv"'
+  writer = csv.writer(response)
+  writer.writerow(['Title', 'Date', 'Location'])
+  for event in events:
+    writer.writerow([event.title, event.date, event.location])
+  return response
+
+def download_filtered_events_admin(request):
+  admin_id = request.session.get('admin_id')
+  events = Event.objects.filter(admin_id_id=admin_id)
+  admin=Admin.objects.get(admin_id=admin_id)
+
+  # Create PDF response
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="events_by_{admin_id}.pdf"'
+
+  # Create the PDF object
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - inch
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawCentredString(width / 2.0, y, f" Events Posted by {admin.name} {admin.surname}({admin.admin_id})")
+  y -= 0.5 * inch
+
+  # Table Header
+  p.setFont("Helvetica-Bold", 12)
+  p.drawString(inch, y, "Event Title")
+  p.drawString(3 * inch, y, "Date")
+  p.drawString(4.5 * inch, y, "Location")
+  y -= 0.3 * inch
+
+  # Table Rows
+  p.setFont("Helvetica", 11)
+  for event in events:
+    if y < inch:  # Start a new page if too low
+      p.showPage()
+      y = height - inch
+    p.drawString(inch, y, event.title)
+    p.drawString(3 * inch, y, str(event.date))
+    p.drawString(4.5 * inch, y, event.location)
+    y -= 0.25 * inch
+
+    # No events message
+    if not events:
+      p.drawString(inch, y, "No events found for the selected date range.")
+
+  p.showPage()
+  p.save()
+
+  return response
 
 def addAction(admin_id: int,record_type: str,icon: str):
   action = Admin_Action(action_type=record_type,admin_id=admin_id, icon=icon,
@@ -231,7 +365,28 @@ def remove_bus(request):
 
 def user_management(request):
     initials=request.session.get("initials")
-    return render(request,'admin/user_management.html',{"initials":initials})
+    students = Student.objects.all()
+    total_students = students.count()
+    campus_counts = students.values('campus_id__campus_name').annotate(count=Count('studentNumber')).order_by('-count')
+    recent_students = Student.objects.order_by('-login_time')[:5]
+
+    student = None
+    studentEmail = request.GET.get('studentEmail')  # from URL or form
+
+    if studentEmail:
+      try:
+        student = Student.objects.get(studentEmail=studentEmail)
+      except Student.DoesNotExist:
+        student = None
+
+    context={
+      'total_students':total_students,
+      'initials':initials,
+      'campus_counts':campus_counts,
+      'recent_students':recent_students,
+      'student':student
+    }
+    return render(request,'admin/user_management.html',context)
 
 def analytics(request):
     initials=request.session.get("initials")
@@ -598,5 +753,108 @@ def full_report_csv(request):
   writer.writerow(["Admin Actions"])
   for action in recent_actions:
     writer.writerow(["", f"{action.admin_id.name}: {action.action_type} at {action.datetime}"])
+
+  return response
+
+def events_stats(request):
+  initials=request.session.get("initials")
+
+  #line graph values
+  today = date.today()
+  dates = [today + timedelta(days=i) for i in range(7)]  # Next 7 days
+  labels = [d.strftime("%Y-%m-%d") for d in dates]
+
+  rsvp_counts = (RSVP.objects
+                 .annotate(day=TruncDate('done_at'))  # Replace 'timestamp' with your RSVP model datetime field
+                 .values('day')
+                 .annotate(count=Count('id'))
+                 .order_by('day'))
+  # Convert queryset to a dictionary {date: count}
+  rsvp_data = {entry['day']: entry['count'] for entry in rsvp_counts}
+
+  # Fill data list in correct order
+  data = [rsvp_data.get(d, 0) for d in dates]
+  end_date=today + timedelta(days=7)
+  total_attendees = RSVP.objects.filter(done_at__date__gte=today,done_at__date__lte=end_date).count()
+
+  #bar graph values
+  today = now().date()
+  month_start = today.replace(day=1)
+  next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+  events_data = Event.objects.filter(
+    date__gte=month_start,
+    date__lt=next_month
+  )
+
+  event_names = [event.title for event in events_data]
+  rsvp_counts = [event.attendance_count for event in events_data]
+
+  context = {
+    'labels': labels,
+    'data': data,
+    'initials':initials,
+    'total_attendees':total_attendees,
+    'event_names': json.dumps(event_names),  # Convert to JSON
+    'rsvp_counts': json.dumps(rsvp_counts),
+  }
+  return render(request,"admin/events/events_stats.html",context)
+
+def download_student_details_pdf(request):
+  studentEmail=request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.pdf"'
+
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - 50
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawString(50, y, "Student Details")
+  y -= 30
+
+  p.line(50, y, 550, y)
+  y -= 25
+
+  p.setFont("Helvetica", 12)
+  p.drawString(50, y, f"Student Number: {student.studentNumber}")
+  y -= 20
+  p.drawString(50, y, f"Name: {student.name}")
+  y -= 20
+  p.drawString(50, y, f"Surname: {student.surname}")
+  y -= 20
+  p.drawString(50, y, f"Email: {student.studentEmail}")
+  y -= 20
+  p.drawString(50, y, f"Campus: {student.campus_id.campus_name if student.campus_id else 'N/A'}")
+  y -= 20
+  p.drawString(50, y,
+               f"Last Login Time: {student.login_time.strftime('%Y-%m-%d') if student.login_time else 'N/A'}")
+
+  p.save()
+  return response
+
+def download_student_details_csv(request):
+  studentEmail = request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.csv"'
+
+  writer = csv.writer(response)
+  # Header row
+  writer.writerow(['Student Number', 'Name', 'Surname', 'Email', 'Campus', 'Date Registered'])
+
+  # Data row
+  writer.writerow([
+    student.studentNumber,
+    student.name,
+    student.surname,
+    student.studentEmail,
+    student.campus_id.campus_name if student.campus_id else "N/A",
+    student.login_time.strftime('%Y-%m-%d') if student.login_time else "N/A"
+  ])
 
   return response

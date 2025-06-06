@@ -166,8 +166,8 @@
               <td><input type="text" name="location" class="form-input" required></td>
             </tr>
             <tr>
-              <td><strong>Description:</strong></td>
-              <td><input type="text" name="description" class="form-input" required></td>
+              <td><strong>Title:</strong></td>
+              <td><input type="text" name="title" class="form-input" required></td>
             </tr>
             <tr>
               <td><strong>Start time:</strong></td>
@@ -178,15 +178,23 @@
               <td><input type="time" name="end_time" required></td>
             </tr>
             <tr>
-              <td><strong>Campus:</strong></td>
-              <td>{{admin.campus_id.campus_name}}</td>
+              <td><strong>Capacity:</strong></td>
+              <td><input type="number" name="capacity" class="form-input" required></td>
+            </tr>
+            <tr>
+              <td><strong>Description:</strong></td>
+              <td><textarea id="description" name="description" rows="10" cols="40" placeholder="Enter event description..."  class="form-input" required maxlength="1500"></textarea></td>
+            </tr>
+            <tr>
+                <td></td>
+               <td><p id="charCount">1500 characters remaining</p></td>
             </tr>
             <tr>
               <td colspan="2">
                 <strong>Event Image:</strong>
                 <div class="image-upload-container">
                   <div class="square" id="imageContainer">
-                    <img id="uploadedImage" alt="Event Image Preview" required>
+                    <img id="uploadedImage" alt="Event Image Preview">
                     <div class="resize-handle" id="resizeHandle"></div>
                   </div>
                   <div class="size-info" id="sizeInfo">Original size: 0 x 0</div>
@@ -204,7 +212,17 @@
     </div>
   </div>
 
-  <script>
+<script>
+    const textarea = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+
+    textarea.addEventListener('input', () => {
+    const remaining = textarea.maxLength - textarea.value.length;
+    charCount.textContent = `${remaining} characters remaining`;
+    });
+</script>
+
+<script>
     let isResizing = false;
     let startX, startY, startWidth, startHeight;
     let originalWidth = 0, originalHeight = 0;
@@ -358,6 +376,6 @@
         img.src = URL.createObjectURL(fileInput.files[0]);
       }
     });
-  </script>
+</script>
 </body>
 </html>

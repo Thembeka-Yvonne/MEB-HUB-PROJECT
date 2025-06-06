@@ -216,7 +216,7 @@
                 <input type="text" name="eventID" value="{{event.event_id}}" hidden>
                 <input type="text" name="location" id="location" value="{{event.location}}" hidden>
                 <input type="text" name="date" id="date" value="{{event.date}}" hidden>
-                <input type="text" name="description" id="description" value="{{event.description}}" hidden>
+                <input type="text" name="title" id="title" value="{{event.title}}" hidden>
                 <input type="text" name="time" id="time" value="{{time}}" hidden>
 
                 <tr>
@@ -236,7 +236,7 @@
                 </tr>
                 <tr>
                     <td>Enter student number:</td>
-                    <td><input type="text" name="studentNo" required id="studNo" value="{{student.studentNumber}}"></td>
+                    <td><input type="text" name="studentNo" required id="studNo" value="{{student.studentNumber}}" readonly></td>
                 </tr>
             </table>
             <button type="submit" onclick="event.preventDefault(); sendEmailAndSubmit();">RSVP Now</button>
@@ -266,24 +266,58 @@
     }
 
     function sendEmailAndSubmit() {
-       const email = document.getElementById("email").value;
-    if (!validateEmail(email)) {
-        alert('Please enter a valid email address before submitting.');
-        return;  // Stop the function if the email is not valid
-    }
+        const email = document.getElementById("email").value;
+        const nameInput = document.getElementById("name");
+        const surnameInput = document.querySelector("input[name='surname']");
+        const emailInput = document.getElementById("email");
+        const studentNoInput = document.getElementById("studNo");
 
-    var params ={
+        let isValid = true;
+
+         // Reset borders to default
+        [nameInput, surnameInput, emailInput, studentNoInput].forEach(input => {
+            input.style.borderColor = '#ced4da';
+        });
+
+        // Check Name
+         if (nameInput.value.trim() === "") {
+            nameInput.style.borderColor = 'red';
+            isValid = false;
+         }
+
+         // Check Surname
+         if (surnameInput.value.trim() === "") {
+            surnameInput.style.borderColor = 'red';
+             isValid = false;
+         }
+
+        if (!validateEmail(email)) {
+            emailInput.style.borderColor = 'red';
+            isValid = false;
+            emailError.style.display = 'inline';  // Show invalid email error
+        } else {
+            emailError.style.display = 'none';    // Hide email error if valid
+        }
+
+
+        // Final validation
+        if (!isValid) {
+           alert('Please fill in all fields correctly before submitting.');
+        return;  // Stop if form is invalid
+        }
+
+        var params ={
             name: document.getElementById("name").value,
             email: document.getElementById("email").value,
             location: document.getElementById("location").value,
             date: document.getElementById("date").value,
-            description: document.getElementById("description").value,
+            title: document.getElementById("title").value,
             time: document.getElementById("time").value,
             reply_to: document.getElementById("email").value
-             };
+        };
 
 
-
+        //send  email
         emailjs.send("service_wzfvzxe", "template_4v3dsxn", params)
             .then(function(response) {
                 console.log("Email Sent!", response.status,response.text);
@@ -297,7 +331,7 @@
                 document.getElementById("email").value = "";
                 document.getElementById("location").value="";
                 document.getElementById("date").value="";
-                document.getElementById("description").value="";
+                document.getElementById("title").value="";
                 document.getElementById("time").value="";
             })
              .catch(function(error) {

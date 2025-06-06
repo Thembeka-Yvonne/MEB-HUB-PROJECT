@@ -227,9 +227,9 @@
             <td><input type="text" id="date" name="date" required="" class="form-control" value="{{ event.date }}"></td>
           </tr>
           <tr>
-            <td><label for="description" class="form-label"><strong>Event Description:</strong></label></td>
+            <td><label for="title" class="form-label"><strong>Event Title:</strong></label></td>
             <td>
-                <input type="text" id="description" name="description" required  class="form-control" value="{{ event.description }}">
+                <input type="text" id="title" name="title" required  class="form-control" value="{{ event.title }}">
             </td>
           </tr>
           <tr>
@@ -246,6 +246,18 @@
             <td><label for="end_time" class="form-label"><strong>End Time:</strong></label></td>
             <td><input type="time" id="end_time" name="end_time" class="form-control" value="{{ event.end_time|time:'H:i' }}"></td>
           </tr>
+            <tr>
+              <td><strong>Capacity:</strong></td>
+              <td><input type="number" id="capacity" name="capacity" required class="form-control" value="{{ event.capacity}}"></td>
+            </tr>
+            <tr>
+              <td><strong>Description:</strong></td>
+              <td><textarea id="description" name="description" rows="10" cols="40" class="form-control" required maxlength="1500">{{event.description}}</textarea></td>
+            </tr>
+            <tr>
+                <td></td>
+               <td><p id="charCount">1500 characters remaining</p></td>
+            </tr>
           <tr>
             <td colspan="2">
               <label class="form-label"><strong>Event Image:</strong></label>
@@ -279,29 +291,36 @@
 
       </form>
 
+<script>
+    const textarea = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
 
-           <!-- Bootstrap JS Bundle with Popper -->
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    textarea.addEventListener('input', () => {
+    const remaining = textarea.maxLength - textarea.value.length;
+    charCount.textContent = `${remaining} characters remaining`;
+    });
+</script>
+ <!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-                 <script>
-                    function previewEventImg() {
-                    const fileInput = document.getElementById('customFile');
-                    const previewImage = document.getElementById('previewImage');
-                    const uploadLabel = document.querySelector('.upload-label');
+ <script>
+     function previewEventImg() {
+     const fileInput = document.getElementById('customFile');
+     const previewImage = document.getElementById('previewImage');
+     const uploadLabel = document.querySelector('.upload-label');
 
-                    if (fileInput.files && fileInput.files[0]) {
-                        const reader = new FileReader();
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+      previewImage.src = e.target.result;
+      previewImage.style.display = 'block';
+      if (uploadLabel) uploadLabel.style.display = 'none';
+     }
 
-                        reader.onload = function(e) {
-                        previewImage.src = e.target.result;
-                        previewImage.style.display = 'block';
-                        if (uploadLabel) uploadLabel.style.display = 'none';
-                        }
-
-                         reader.readAsDataURL(fileInput.files[0]);
-                        }
-                    }
-                </script>
+     reader.readAsDataURL(fileInput.files[0]);
+     }
+    }
+</script>
 
 
 

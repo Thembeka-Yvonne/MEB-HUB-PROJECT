@@ -12,7 +12,7 @@ function sendMail(){
     email: document.getElementById("email").value,
     location: document.getElementById("location").value,
     date: document.getElementById("date").value,
-    description: document.getElementById("description").value,
+    title: document.getElementById("title").value,
     time: document.getElementById("time").value,
     reply_to: document.getElementById("email").value
     };
@@ -29,7 +29,7 @@ function sendMail(){
         document.getElementById("email").value = "";
         document.getElementById("location").value="";
         document.getElementById("date").value="";
-        document.getElementById("description").value="";
+        document.getElementById("title").value="";
         document.getElementById("time").value="";
         console.log(res);
     })
