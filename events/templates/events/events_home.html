@@ -158,6 +158,11 @@
     </nav>
 
     <main>
+        <div class="mb-4 ms-3 mt-3">
+      <button class="btn btn-outline-primary" >
+       <a href="{% url 'account:home' %}" style="text-decoration: none;" ><i class="bi bi-arrow-left-circle"> </i> Back</a>
+      </button>
+    </div>
         <h1 class="events-heading">Campus Events</h1>
         <div class="main-container">
             {% if events %}
