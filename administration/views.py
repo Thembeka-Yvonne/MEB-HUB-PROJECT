@@ -22,6 +22,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from django.db.models import Sum
 import json
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from django.utils.safestring import mark_safe
 
 
 # Create your views here.
@@ -390,10 +392,26 @@ def user_management(request):
 
 def analytics(request):
     initials=request.session.get("initials")
-    return render(request,'admin/analytics.html',{'initials':initials})
+
+    # Get initials from session
+    initials = request.session.get("initials")
+
+    # Get both stats
+    bus_stats = bus_schedule_stats()
+    event_stats = events_stats()
+    user_activity_data = get_user_activity_data()
+
+    context = {
+        **bus_stats,
+        **event_stats,
+        **user_activity_data,
+        "initials": initials
+    }
+
+    return render(request,'admin/analytics.html',context)
       
   
-def bus_schedule_stats(request):
+def bus_schedule_stats():
   total_views = Bus_Stats.objects.count()
 
   # Views per schedule
@@ -427,7 +445,6 @@ def bus_schedule_stats(request):
   recent_labels = [item['date'] for item in recent_views]
   recent_counts = [item['count'] for item in recent_views]
 
-  initials = request.session.get("initials")
 
 
   context = {
@@ -436,10 +453,9 @@ def bus_schedule_stats(request):
     'views_by_day': list(zip(day_labels, day_counts)),
     'recent_views': list(zip(recent_labels, recent_counts)),
     'most_viewed': views_per_schedule[0] if views_per_schedule else None,
-    'initials':initials
   }
 
-  return render(request, 'admin/buses/schedule_stats.html', context)
+  return context
 
 
 def student_report(request):
@@ -756,26 +772,29 @@ def full_report_csv(request):
 
   return response
 
-def events_stats(request):
-  initials=request.session.get("initials")
+def events_stats():
 
   #line graph values
   today = date.today()
-  dates = [today + timedelta(days=i) for i in range(7)]  # Next 7 days
-  labels = [d.strftime("%Y-%m-%d") for d in dates]
+  start_of_week = today - timedelta(days=today.weekday())  # Monday
+  end_of_week = start_of_week + timedelta(days=6)  # Sunday
 
-  rsvp_counts = (RSVP.objects
-                 .annotate(day=TruncDate('done_at'))  # Replace 'timestamp' with your RSVP model datetime field
-                 .values('day')
-                 .annotate(count=Count('id'))
-                 .order_by('day'))
-  # Convert queryset to a dictionary {date: count}
+  week_dates = [start_of_week + timedelta(days=i) for i in range(7)]
+  labels = [d.strftime("%Y-%m-%d") for d in week_dates]
+
+  rsvp_counts = (
+      RSVP.objects
+      .filter(done_at__date__gte=start_of_week, done_at__date__lte=end_of_week)
+      .annotate(day=TruncDate('done_at'))
+      .values('day')
+      .annotate(count=Count('id'))
+      .order_by('day')
+  )
+
   rsvp_data = {entry['day']: entry['count'] for entry in rsvp_counts}
+  data = [rsvp_data.get(d, 0) for d in week_dates]
 
-  # Fill data list in correct order
-  data = [rsvp_data.get(d, 0) for d in dates]
-  end_date=today + timedelta(days=7)
-  total_attendees = RSVP.objects.filter(done_at__date__gte=today,done_at__date__lte=end_date).count()
+  total_attendees = RSVP.objects.filter(done_at__date__gte=start_of_week, done_at__date__lte=end_of_week).count()
 
   #bar graph values
   today = now().date()
@@ -793,12 +812,11 @@ def events_stats(request):
   context = {
     'labels': labels,
     'data': data,
-    'initials':initials,
     'total_attendees':total_attendees,
     'event_names': json.dumps(event_names),  # Convert to JSON
     'rsvp_counts': json.dumps(rsvp_counts),
   }
-  return render(request,"admin/events/events_stats.html",context)
+  return context
 
 def download_student_details_pdf(request):
   studentEmail=request.GET.get('studentEmail')
@@ -858,3 +876,19 @@ def download_student_details_csv(request):
   ])
 
   return response
+
+def get_user_activity_data():
+    now = timezone.now()
+
+
+    # Weekly Active Users (last 8 weeks)
+    wau = Student.objects.filter(login_time__gte=now - timezone.timedelta(weeks=8)) \
+        .annotate(week=TruncWeek('login_time')) \
+        .values('week') \
+        .annotate(count=Count('studentNumber')) \
+        .order_by('week')
+
+    return {
+        'wau_labels': mark_safe(json.dumps([item['week'].strftime('%Y-%m-%d') for item in wau])),
+        'wau_counts': mark_safe(json.dumps([item['count'] for item in wau])),
+    }
