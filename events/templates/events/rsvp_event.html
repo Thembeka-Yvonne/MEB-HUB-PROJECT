@@ -319,6 +319,8 @@
     <script>
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('email-error');
+        const submitBtn = document.querySelector("button[type='submit']");
+
 
     emailInput.addEventListener('input', function() {
         const email = emailInput.value;
@@ -387,10 +389,13 @@
             reply_to: document.getElementById("email").value
         };
 
+         submitBtn.disabled = true;
+         submitBtn.textContent = "Sending RSVP...";
 
         //send  email
         emailjs.send("service_wzfvzxe", "template_4v3dsxn", params)
             .then(function(response) {
+
                 console.log("Email Sent!", response.status,response.text);
                 alert('RSVP added, please check your email or email spam.');
 
@@ -407,7 +412,9 @@
             })
              .catch(function(error) {
             console.log("Failed to send email ", error);
-            alert('RSVP confirmed! However, we encountered an issue sending your confirmation email. Please check your email address or contact support.');
+            alert('RSVP saved! However, we encountered an issue sending your confirmation email. Please check your email address or contact support.');
+            //submit form to Django
+            document.getElementById('rsvpForm').submit();
     });
     }
     </script>
