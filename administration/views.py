@@ -1,8 +1,10 @@
 from django.shortcuts import render,redirect
-from login.models import Campus,Admin,Student
+from login.models import Campus, Admin, Student, RegisteredStudent
 from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
 from events.models import RSVP
+from django.urls import reverse
+from django.contrib import messages
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
 from datetime import date
@@ -375,6 +377,15 @@ def user_management(request):
     student = None
     studentEmail = request.GET.get('studentEmail')  # from URL or form
 
+    campuses = Campus.objects.all()
+    campus_id=request.GET.get('campus_id')
+    if campus_id:
+        registered_students = RegisteredStudent.objects.filter(campus_id=campus_id)
+        student_numbers = registered_students.values_list('studentNumber', flat=True)
+        students = students.filter(studentNumber__in=student_numbers)
+
+
+
     if studentEmail:
       try:
         student = Student.objects.get(studentEmail=studentEmail)
@@ -386,7 +397,9 @@ def user_management(request):
       'initials':initials,
       'campus_counts':campus_counts,
       'recent_students':recent_students,
-      'student':student
+      'student':student,
+      'campuses': campuses,
+      'students':students
     }
     return render(request,'admin/user_management.html',context)
 
