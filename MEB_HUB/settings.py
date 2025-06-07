@@ -14,8 +14,10 @@ from pathlib import Path
 from django.contrib.messages import constants as messages
 from django.conf.global_settings import STATICFILES_DIRS, STATIC_ROOT
 import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -162,3 +164,5 @@ MESSAGE_TAGS={
     messages.ERROR:'danger',
     messages.SUCCESS:'success'
 }
+
+

@@ -399,13 +399,10 @@
         document.removeEventListener('click', closeMenuOnClickOutside);
       }
     }
-        function goBack() {
-      if (document.referrer) {
-        window.history.back();
-      } else {
-        window.location.href = "{% url 'home' %}";
-      }
-    }
+function goBack() {
+  window.location.href = "{% url 'account:home' %}";
+}
+    
 </script>
 
 </body>

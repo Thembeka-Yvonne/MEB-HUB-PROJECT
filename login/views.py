@@ -17,6 +17,11 @@ from events.models import Event
 from .models import Student, Campus
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.shortcuts import render
+from .forms import ContactForm
+from django.conf import settings 
+from django.core.mail import send_mail, BadHeaderError
 
 
 # Create your views here.
@@ -187,7 +192,10 @@ def about(request):
 def contact(request):
     return render(request, 'contact_us/contact_us.html')
 
-
+def landing_about(request):
+    return render(request,'login/landing_about.html')
+def landing_contact(request):
+    return render(request, 'login/landing_contactUs.html')
 
 def update_profile(request):
         stud_id = request.session.get("stud_id")
@@ -249,6 +257,7 @@ def reset_password(request):
             messages.error(request, "No student or admin found with that email.")
 
     return render(request, "login/reset_password.html")
+
 
 
 
