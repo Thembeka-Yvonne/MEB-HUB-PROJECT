@@ -5,6 +5,7 @@ from .models import CampusLocation
 from login.models import Admin
 from .models import CampusLocation
 from django.contrib import messages
+from administration.views import addAction
 
 def campus_locations_json(request):
     data = {
@@ -78,6 +79,8 @@ def add_location(request):
                 longitude=longitude,
                 admin_id=admin
             )
+            admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+            addAction(admin_id=admin,record_type="Add campus location",icon="bi bi-map")
             messages.success(request, 'Location added successfully!')
             return redirect('add_location')  # Redirect to clear the form
 
@@ -95,6 +98,8 @@ def remove_location(request):
         loc = CampusLocation.objects.all().get(id=id)
         loc.delete()
         
+        admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+        addAction(admin_id=admin,record_type="Removed campus location",icon="bi bi-map")
         messages.success(request, 'Location removed successfully!')
         return redirect('remove_location')  # Redirect to clear the form
         
@@ -142,6 +147,8 @@ def update_location(request,id):
         
         camp_location.save()
         
+        admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+        addAction(admin_id=admin,record_type="Updated campus location",icon="bi bi-map")
         messages.success(request, 'Location Updated successfully!')
         return redirect('update_location',id=id)  # Redirect to clear the form
     

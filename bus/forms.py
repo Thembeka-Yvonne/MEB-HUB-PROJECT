@@ -22,3 +22,6 @@ class ApplicationConfirmationForm(forms.Form):
             raise ValidationError("Unsupported file type")
 
         return file
+    
+
+

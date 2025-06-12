@@ -1,12 +1,15 @@
 from django.shortcuts import render,redirect
-from login.models import Campus,Admin,Student
+from login.models import Campus, Admin, Student, RegisteredStudent
 from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
+from events.models import RSVP
+from django.urls import reverse
+from django.contrib import messages
 from django.http import HttpResponseRedirect,HttpResponse
 from datetime import datetime,timedelta
 from datetime import date
 from django.forms import Form
-from events.models import Event
+from events.models import Event, ArchivedEvents
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.db.models import Count
@@ -15,10 +18,19 @@ from reportlab.pdfgen import canvas
 from docx import Document
 import csv
 from io import BytesIO
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from django.db.models import Sum
+import json
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from django.utils.safestring import mark_safe
 
 
 # Create your views here.
 def admin_home(request):
+ if 'admin_id' in request.session:
   admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
   today = timezone.localdate()
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
@@ -33,6 +45,8 @@ def admin_home(request):
   }
   return render(request,"admin/admin.html",context
   )
+ else:
+   return redirect('account:login')
 
 #campus functionalilities
 
@@ -120,15 +134,139 @@ def add_bus_schedule(request,code):
       })
   
 def events_menu(request):
-  Event.objects.filter(date__lt=date.today()).delete()  # automatically delete events
+  expired_events = Event.objects.filter(date__lt=date.today()) #automatically delete events
+  for event in expired_events:
+        event.delete()
+
   admin_id = request.session.get('admin_id')
   initials = request.session.get("initials")
+  total_upcoming_events = Event.objects.count()
+  total_past_events = ArchivedEvents.objects.count()
+
+  filtered_events=None
+  start_date=request.GET.get('start_date')
+  end_date=request.GET.get('end_date')
+  if start_date and end_date:
+      filtered_events=Event.objects.filter(date__range=[start_date,end_date])
+
+
+
+
+  filtered_events_admin = Event.objects.filter(admin_id_id=admin_id)
 
   if admin_id is None:
     return redirect('admin_home')  # or handle expired session
 
   admin = Admin.objects.select_related('campus_id').get(admin_id=admin_id)
-  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials})
+  return render(request,"admin/events/events_menu.html",{'admin':admin,'initials':initials,'total_upcoming_events': total_upcoming_events,
+        'total_past_events': total_past_events,
+        'filtered_events': filtered_events,'filtered_events_admin':filtered_events_admin})
+
+def download_filtered_events(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    events = Event.objects.filter(date__range=[start_date, end_date])
+
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{start_date}_to_{end_date}_events.pdf"'
+
+    # Create the PDF object
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    y = height - inch
+
+    # Title
+    p.setFont("Helvetica-Bold", 16)
+    p.drawCentredString(width / 2.0, y, f"Filtered Events from {start_date} to {end_date}")
+    y -= 0.5 * inch
+
+    # Table Header
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(inch, y, "Event Title")
+    p.drawString(3 * inch, y, "Date")
+    p.drawString(4.5 * inch, y, "Location")
+    y -= 0.3 * inch
+
+    # Table Rows
+    p.setFont("Helvetica", 11)
+    for event in events:
+      if y < inch:  # Start a new page if too low
+        p.showPage()
+        y = height - inch
+      p.drawString(inch, y, event.title)
+      p.drawString(3 * inch, y, str(event.date))
+      p.drawString(4.5 * inch, y, event.location)
+      y -= 0.25 * inch
+
+      # No events message
+      if not events:
+        p.drawString(inch, y, "No events found for the selected date range.")
+
+    p.showPage()
+    p.save()
+
+    return response
+
+
+def download_filtered_events_csv(request):
+  start_date = request.GET.get('start_date')
+  end_date = request.GET.get('end_date')
+  events = Event.objects.filter(date__range=[start_date, end_date])
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = 'attachment; filename="Filtered Events from {start_date} to {end_date}.csv"'
+  writer = csv.writer(response)
+  writer.writerow(['Title', 'Date', 'Location'])
+  for event in events:
+    writer.writerow([event.title, event.date, event.location])
+  return response
+
+def download_filtered_events_admin(request):
+  admin_id = request.session.get('admin_id')
+  events = Event.objects.filter(admin_id_id=admin_id)
+  admin=Admin.objects.get(admin_id=admin_id)
+
+  # Create PDF response
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="events_by_{admin_id}.pdf"'
+
+  # Create the PDF object
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - inch
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawCentredString(width / 2.0, y, f" Events Posted by {admin.name} {admin.surname}({admin.admin_id})")
+  y -= 0.5 * inch
+
+  # Table Header
+  p.setFont("Helvetica-Bold", 12)
+  p.drawString(inch, y, "Event Title")
+  p.drawString(3 * inch, y, "Date")
+  p.drawString(4.5 * inch, y, "Location")
+  y -= 0.3 * inch
+
+  # Table Rows
+  p.setFont("Helvetica", 11)
+  for event in events:
+    if y < inch:  # Start a new page if too low
+      p.showPage()
+      y = height - inch
+    p.drawString(inch, y, event.title)
+    p.drawString(3 * inch, y, str(event.date))
+    p.drawString(4.5 * inch, y, event.location)
+    y -= 0.25 * inch
+
+    # No events message
+    if not events:
+      p.drawString(inch, y, "No events found for the selected date range.")
+
+  p.showPage()
+  p.save()
+
+  return response
 
 def addAction(admin_id: int,record_type: str,icon: str):
   action = Admin_Action(action_type=record_type,admin_id=admin_id, icon=icon,
@@ -301,7 +439,6 @@ def bus_schedule_stats(request):
   recent_labels = [item['date'] for item in recent_views]
   recent_counts = [item['count'] for item in recent_views]
 
-  initials = request.session.get("initials")
 
 
   context = {
@@ -310,10 +447,112 @@ def bus_schedule_stats(request):
     'views_by_day': list(zip(day_labels, day_counts)),
     'recent_views': list(zip(recent_labels, recent_counts)),
     'most_viewed': views_per_schedule[0] if views_per_schedule else None,
-    'initials':initials
   }
 
   return render(request, 'admin/buses/schedule_stats.html', context)
+
+def user_management(request):
+    initials=request.session.get("initials")
+    students = Student.objects.all()
+    total_students = students.count()
+    campus_counts = students.values('campus_id__campus_name').annotate(count=Count('studentNumber')).order_by('-count')
+    recent_students = Student.objects.order_by('-login_time')[:5]
+
+    student = None
+    studentEmail = request.GET.get('studentEmail')  # from URL or form
+
+    campuses = Campus.objects.all()
+    campus_id=request.GET.get('campus_id')
+    if campus_id:
+        registered_students = RegisteredStudent.objects.filter(campus_id=campus_id)
+        student_numbers = registered_students.values_list('studentNumber', flat=True)
+        students = students.filter(studentNumber__in=student_numbers)
+
+
+
+    if studentEmail:
+      try:
+        student = Student.objects.get(studentEmail=studentEmail)
+      except Student.DoesNotExist:
+        student = None
+
+    context={
+      'total_students':total_students,
+      'initials':initials,
+      'campus_counts':campus_counts,
+      'recent_students':recent_students,
+      'student':student,
+      'campuses': campuses,
+      'students':students
+    }
+    return render(request,'admin/user_management.html',context)
+
+def analytics(request):
+    initials=request.session.get("initials")
+
+    # Get initials from session
+    initials = request.session.get("initials")
+
+    # Get both stats
+    bus_stats = bus_schedule_stats()
+    event_stats = events_stats()
+    user_activity_data = get_user_activity_data()
+
+    context = {
+        **bus_stats,
+        **event_stats,
+        **user_activity_data,
+        "initials": initials
+    }
+
+    return render(request,'admin/analytics.html',context)
+      
+  
+def bus_schedule_stats():
+  total_views = Bus_Stats.objects.count()
+
+  # Views per schedule
+  views_per_schedule = Bus_Stats.objects.values(
+    'schedule_code__schedule_code',
+    'schedule_code__campus1',
+    'schedule_code__campus2'
+  ).annotate(view_count=Count('id')).order_by('-view_count')
+
+  # Views by day
+  views_by_day = Bus_Stats.objects.annotate(
+    date=TruncDate('viewed_at')
+  ).values('date').annotate(count=Count('id')).order_by('date')
+
+  # Views in the last 7 days
+  seven_days_ago = timezone.now() - timedelta(days=7)
+  recent_views = Bus_Stats.objects.filter(viewed_at__gte=seven_days_ago).annotate(
+    date=TruncDate('viewed_at')
+  ).values('date').annotate(count=Count('id')).order_by('date')
+
+  # Prepare data for charts
+  schedule_labels = [
+    f"{item['schedule_code__schedule_code']} - {item['schedule_code__campus1']} and {item['schedule_code__campus2']}"
+    for item in views_per_schedule
+  ]
+  schedule_counts = [item['view_count'] for item in views_per_schedule]
+
+  day_labels = [item['date'] for item in views_by_day]
+  day_counts = [item['count'] for item in views_by_day]
+
+  recent_labels = [item['date'] for item in recent_views]
+  recent_counts = [item['count'] for item in recent_views]
+
+
+
+  context = {
+    'total_views': total_views,
+    'views_per_schedule': list(zip(schedule_labels, schedule_counts)),
+    'views_by_day': list(zip(day_labels, day_counts)),
+    'recent_views': list(zip(recent_labels, recent_counts)),
+    'most_viewed': views_per_schedule[0] if views_per_schedule else None,
+  }
+
+  return context
 
 
 def student_report(request):
@@ -629,3 +868,124 @@ def full_report_csv(request):
     writer.writerow(["", f"{action.admin_id.name}: {action.action_type} at {action.datetime}"])
 
   return response
+
+def events_stats():
+
+  #line graph values
+  today = date.today()
+  start_of_week = today - timedelta(days=today.weekday())  # Monday
+  end_of_week = start_of_week + timedelta(days=6)  # Sunday
+
+  week_dates = [start_of_week + timedelta(days=i) for i in range(7)]
+  labels = [d.strftime("%Y-%m-%d") for d in week_dates]
+
+  rsvp_counts = (
+      RSVP.objects
+      .filter(done_at__date__gte=start_of_week, done_at__date__lte=end_of_week)
+      .annotate(day=TruncDate('done_at'))
+      .values('day')
+      .annotate(count=Count('id'))
+      .order_by('day')
+  )
+
+  rsvp_data = {entry['day']: entry['count'] for entry in rsvp_counts}
+  data = [rsvp_data.get(d, 0) for d in week_dates]
+
+  total_attendees = RSVP.objects.filter(done_at__date__gte=start_of_week, done_at__date__lte=end_of_week).count()
+
+  #bar graph values
+  today = now().date()
+  month_start = today.replace(day=1)
+  next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+  events_data = Event.objects.filter(
+    date__gte=month_start,
+    date__lt=next_month
+  )
+
+  event_names = [event.title for event in events_data]
+  rsvp_counts = [event.attendance_count for event in events_data]
+
+  context = {
+    'labels': labels,
+    'data': data,
+    'total_attendees':total_attendees,
+    'event_names': json.dumps(event_names),  # Convert to JSON
+    'rsvp_counts': json.dumps(rsvp_counts),
+  }
+  return context
+
+def download_student_details_pdf(request):
+  studentEmail=request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='application/pdf')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.pdf"'
+
+  p = canvas.Canvas(response, pagesize=A4)
+  width, height = A4
+  y = height - 50
+
+  # Title
+  p.setFont("Helvetica-Bold", 16)
+  p.drawString(50, y, "Student Details")
+  y -= 30
+
+  p.line(50, y, 550, y)
+  y -= 25
+
+  p.setFont("Helvetica", 12)
+  p.drawString(50, y, f"Student Number: {student.studentNumber}")
+  y -= 20
+  p.drawString(50, y, f"Name: {student.name}")
+  y -= 20
+  p.drawString(50, y, f"Surname: {student.surname}")
+  y -= 20
+  p.drawString(50, y, f"Email: {student.studentEmail}")
+  y -= 20
+  p.drawString(50, y, f"Campus: {student.campus_id.campus_name if student.campus_id else 'N/A'}")
+  y -= 20
+  p.drawString(50, y,
+               f"Last Login Time: {student.login_time.strftime('%Y-%m-%d') if student.login_time else 'N/A'}")
+
+  p.save()
+  return response
+
+def download_student_details_csv(request):
+  studentEmail = request.GET.get('studentEmail')
+  student = Student.objects.get(studentEmail=studentEmail)
+
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = f'attachment; filename="student_{student.studentNumber}_details.csv"'
+
+  writer = csv.writer(response)
+  # Header row
+  writer.writerow(['Student Number', 'Name', 'Surname', 'Email', 'Campus', 'Date Registered'])
+
+  # Data row
+  writer.writerow([
+    student.studentNumber,
+    student.name,
+    student.surname,
+    student.studentEmail,
+    student.campus_id.campus_name if student.campus_id else "N/A",
+    student.login_time.strftime('%Y-%m-%d') if student.login_time else "N/A"
+  ])
+
+  return response
+
+def get_user_activity_data():
+    now = timezone.now()
+
+
+    # Weekly Active Users (last 8 weeks)
+    wau = Student.objects.filter(login_time__gte=now - timezone.timedelta(weeks=8)) \
+        .annotate(week=TruncWeek('login_time')) \
+        .values('week') \
+        .annotate(count=Count('studentNumber')) \
+        .order_by('week')
+
+    return {
+        'wau_labels': mark_safe(json.dumps([item['week'].strftime('%Y-%m-%d') for item in wau])),
+        'wau_counts': mark_safe(json.dumps([item['count'] for item in wau])),
+    }

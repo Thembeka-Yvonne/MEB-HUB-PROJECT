@@ -37,3 +37,4 @@ class Bus_schedule(models.Model):
 class Bus_Stats(models.Model):
     viewed_at = models.DateTimeField(default=timezone.now)
     schedule_code = models.ForeignKey(ScheduleCode,on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student,on_delete=models.CASCADE,null=True,blank=True)

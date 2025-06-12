@@ -165,6 +165,14 @@
             cursor: pointer;
         }
 
+        .form-input{
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
         .form-select:focus {
             outline: none;
             border-color: var(--primary);
@@ -303,7 +311,9 @@
         <div class="sidebar">
             <ul class="sidebar-menu">
                 <li><a href="{% url 'admin_home' %}" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li><a href="{% url 'user_management' %}"><i class="bi bi-people-fill"></i> User Management</a></li>
                 <li><a href="{% url 'bus_menu' %}"><i class="bi bi-bus-front"></i> Bus Management</a></li>
+                <li><a href="{% url 'display_map_menu' %}"><i class="bi bi-map"></i>Maps</a></li>
                 <li><a href="{% url 'events_menu' %}"><i class="bi bi-calendar-event"></i> Events Management</a></li>
                 <li><a href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a></li>
                 <li><a href="{% url 'account:landing' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a></li>
@@ -313,25 +323,31 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">
-                <h1>Events Report</h1>
+                <h1>Event RSVP Report </h1>
         </div>
         <!-- Report Download Form -->
         <div class="report-container">
             <div class="report-card">
-                <h3>Generate Event Report</h3>
-
                 <form id="reportForm" method="get">
                     <div class="form-group">
-                        <label for="eventSelect" class="form-label">Select Event</label>
+                        <div class="dropdown">
+                          <input type="text" class="form-input dropdown-toggle" id="eventSearch"
+                            placeholder="Search and select an event..." autocomplete="off"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+
+                        <!-- Hidden select element that will hold the actual value -->
                         <select class="form-select" id="eventSelect" required>
                             <option value="">-- Choose an event --</option>
                             {% for event in events %}
-                                <option value="{{event.event_id}}">{{event.description}}</option>
+                                <option value="{{event.event_id}}">{{event.title}}</option>
                             {% empty %}
                                 <option disabled>No events found for this admin.</option>
                             {% endfor %}
                         </select>
                     </div>
+
+                </div>
+
 
                     <div class="form-group">
                         <label class="form-label">Select Format</label>
@@ -348,17 +364,68 @@
                         <input type="hidden" id="formatSelect" value="pdf">
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
+                    <button id="downloadBtn" type="submit" class="btn btn-primary" disabled>
                         <i class="bi bi-cloud-arrow-down btn-icon"></i>  Download Report
                     </button>
                 </form>
-          <a href="{% url 'events_menu' %}" class="back-link">← Back to Events Menu</a>
-
             </div>
         </div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventSearch = document.getElementById('eventSearch');
+    const eventSelect = document.getElementById('eventSelect');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalOptions = Array.from(eventSelect.options);
 
-    <script>
+    // Search functionality
+    eventSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+
+        // Clear existing options except the first one
+        while (eventSelect.options.length > 1) {
+            eventSelect.remove(1);
+        }
+
+        // Filter and add matching options
+        originalOptions.forEach(option => {
+            if (option.value && option.text.toLowerCase().includes(searchTerm)) {
+                eventSelect.add(new Option(option.text, option.value));
+            }
+        });
+
+        // Disable download button if no selection
+        downloadBtn.disabled = eventSelect.value === '';
+    });
+
+    // Enable/disable download button based on selection
+    eventSelect.addEventListener('change', function() {
+        downloadBtn.disabled = this.value === '';
+    });
+
+    // Download functionality
+    downloadBtn.addEventListener('click', function() {
+        if (eventSelect.value) {
+            // Here you can implement the download logic
+            // For example, redirect to a download endpoint:
+            window.location.href = `/download-event/${eventSelect.value}/`;
+
+            // Or if you're using a form:
+            // const form = document.createElement('form');
+            // form.method = 'POST';
+            // form.action = '/download-event/';
+            // const input = document.createElement('input');
+            // input.type = 'hidden';
+            // input.name = 'event_id';
+            // input.value = eventSelect.value;
+            // form.appendChild(input);
+            // document.body.appendChild(form);
+            // form.submit();
+        }
+    });
+});
+</script>
+<script>
         // Format selection
         const formatOptions = document.querySelectorAll('.download-option');
         formatOptions.forEach(option => {
@@ -385,7 +452,7 @@
 
 
         });
-    </script>
+</script>
     </div>
 </body>
 </html>

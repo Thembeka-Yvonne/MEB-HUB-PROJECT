@@ -28,12 +28,18 @@ urlpatterns = [
     path("user_management",views.user_management,name="user_management"),
     path("analytics",views.analytics,name="analytics"),
 
-   path('student-report/', views.student_report, name='student_report'),
+    path('student-report/', views.student_report, name='student_report'),
     path('student-report/pdf/', views.student_report_pdf, name='student_report_pdf'),
     path('student-report/docx/', views.student_report_docx, name='student_report_docx'),
     path('student-report/csv/', views.student_report_csv, name='student_report_csv'),
-   path('full-report/', views.full_report, name='full_report'),
-path('full-report/pdf/', views.full_report_pdf, name='full_report_pdf'),
-path('full-report/docx/', views.full_report_docx, name='full_report_docx'),
-path('full-report/csv/', views.full_report_csv, name='full_report_csv'),
+    path('full-report/', views.full_report, name='full_report'),
+    path('full-report/pdf/', views.full_report_pdf, name='full_report_pdf'),
+    path('full-report/docx/', views.full_report_docx, name='full_report_docx'),
+    path('full-report/csv/', views.full_report_csv, name='full_report_csv'),
+    path('download_filtered_events', views.download_filtered_events, name='download_filtered_events'),
+    path('download_filtered_events_csv', views.download_filtered_events_csv, name='download_filtered_events_csv'),
+    path('download_filtered_events_admin',views.download_filtered_events_admin,name='download_filtered_events_admin'),
+    path('events_stats/',views.events_stats,name='events_stats'),
+    path('download_student_details_pdf',views.download_student_details_pdf,name='download_student_details_pdf'),
+    path('download_student_details_csv',views.download_student_details_csv,name='download_student_details_csv')
 ]

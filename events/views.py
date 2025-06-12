@@ -15,7 +15,8 @@ from .models import Event, RSVP
 import csv
 from administration.views import addAction
 from login.models import Student
-
+from django.utils import timezone
+from django.db import models
 
 
 # Create your views here.
@@ -41,6 +42,8 @@ def add_event(request):
         image_file =request.FILES.get('image')
         start_time = request.POST['start_time']
         end_time = request.POST['end_time']
+        capacity=request.POST['capacity']
+        title=request.POST['title']
 
         s_time = datetime.strptime(start_time, '%H:%M')
         e_time = datetime.strptime(end_time, '%H:%M')
@@ -55,7 +58,9 @@ def add_event(request):
                 image=image_data,
                 start_time=s_time.time(),
                 end_time=e_time.time(),
-                attendance_count=0
+                attendance_count=0,
+                capacity=capacity,
+                title=title
             )
             event.save()
 
@@ -87,6 +92,9 @@ def update_event_page(request):
             start_time = request.POST['start_time']
             end_time = request.POST['end_time']
 
+            capacity = request.POST['capacity']
+
+            title= request.POST['title']
 
             eventID = request.GET.get('eventID')
             eventImage=request.FILES.get('eventImage')
@@ -109,6 +117,8 @@ def update_event_page(request):
             event.date=date_obj
             event.location=location
             event.description=description
+            event.capacity=capacity
+            event.title=title
 
             event.save()
             addAction(admin_id=admin, record_type="Updated an event", icon="bi bi-calendar")
@@ -136,7 +146,7 @@ def delete_event(request):
     event_id=request.GET.get("eventID")
     if request.method == 'POST':
         event = get_object_or_404(Event, event_id=event_id)
-        event.delete()
+        models.Model.delete(Event.objects.get(event_id=event_id))
         messages.success(request, "Event Deleted")
         addAction(admin_id=admin, record_type="Deleted an event", icon="bi bi-x-circle")
 
@@ -164,13 +174,29 @@ def update_events(request):
 
 
 def events_home(request):
-    Event.objects.filter(date__lt=date.today()).delete() #automatically delete events
+    expired_events = Event.objects.filter(date__lt=date.today()) #automatically delete events
+    for event in expired_events:
+        event.delete()
 
-    events= Event.objects.all()
+
+    stud_id=request.session.get('stud_id')
+    events = Event.objects.all()
+
+    rsvp_event_ids = list(RSVP.objects.filter(guest_studentnumber=stud_id).values_list('event_id', flat=True))
+    rsvp_event_ids = [int(eid) for eid in rsvp_event_ids]
+
+    initials=request.session.get("initials")
+
     events=events.order_by('date')
-    initials = request.session.get("initials")
 
-    return render(request, 'events/events_home.html',{'events':events,'initials':initials})
+    context = {
+        'events': events,
+        'rsvp_event_ids': rsvp_event_ids,
+        'initials' : initials
+    }
+
+
+    return render(request, 'events/events_home.html',context)
 
 def event_details(request):
     admin_id = request.session.get('admin_id')
@@ -195,10 +221,10 @@ def generate_event_csv(request, event_id):
 
     # Create CSV response
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.csv"'
+    response['Content-Disposition'] = f'attachment; filename="event_{event.title}_report.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Event Description', event.description])
+    writer.writerow(['Event Title', event.title])
     writer.writerow(['Date', event.date])
     writer.writerow(['Attendance Count', event.attendance_count])
     writer.writerow([])
@@ -218,14 +244,14 @@ def generate_event_pdf(request, event_id):
 
         # Create PDF response
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="event_{event.description}_report.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="event_{event.title}_report.pdf"'
 
         p = canvas.Canvas(response, pagesize=A4)
         width, height = A4
         y = height - 50
 
         p.setFont("Helvetica-Bold", 16)
-        p.drawString(50, y, f"Event Report: {event.description}")
+        p.drawString(50, y, f"Event Report: {event.title}")
         y -= 30
 
         p.setFont("Helvetica", 12)
@@ -271,6 +297,7 @@ def rsvp_event(request):
     studNum=request.session.get("stud_id")
     student=Student.objects.get(studentNumber=studNum)
     time = event.start_time.strftime('%H:%M')+"-"+event.end_time.strftime('%H:%M')
+    initials=request.session.get('initials')
 
 
     if request.method=='POST':
@@ -280,23 +307,26 @@ def rsvp_event(request):
         guest_name = request.POST['name']
         guest_surname = request.POST['surname']
         email = request.POST['email']
+        done_at=timezone.now()
+
 
         if is_valid_email(email): #check if the email is valid
             try:
                 with connection.cursor() as cursor:
                     #call the procedure so it can add values into the rsvp table
                     cursor.execute(""" 
-                            CALL public.add_rsvp(%s, %s, %s,%s) 
-                        """, [event_id, guest_name, guest_student_no,guest_surname])
+                            CALL public.add_rsvp(%s, %s, %s,%s,%s) 
+                        """, [event_id, guest_name, guest_student_no,guest_surname,done_at])
                 messages.success(request, "RSVP Successful, check your email or email spam")
+                return redirect(f"{reverse('events_home')}")
             except IntegrityError:
                 messages.error(request, "Database Error! Could not save RSVP.")
-            return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
+            return redirect(f"{reverse('events_home')}")
         else:
             messages.success(request, "Invalid email!! Try again")
             return redirect(f"{reverse('rsvp_event')}?eventID={event.event_id}")
 
-    return render(request,'events/rsvp_event.html',{'event':event,'time':time,'student':student})
+    return render(request,'events/rsvp_event.html',{'event':event,'time':time,'student':student,'initials':initials})
 
 def serve_image(request,id): #serve the image from the database as image, converting it from binary to image
     event = Event.objects.get(event_id=id)

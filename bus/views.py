@@ -6,6 +6,7 @@ from .models import Bus_Stats
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+from login.models import Student
 
 # Create your views here.s
 def home(request):
@@ -75,7 +76,8 @@ def view_schedule(request, schedule_code):
     # GET request logic
     schedule_list = Bus_schedule.objects.filter(schedule_code=schedule_code)
     schedule = ScheduleCode(schedule_code=schedule_code)
-    stats = Bus_Stats(schedule_code=schedule)
+    student = Student.objects.all().get(studentNumber=request.session['stud_id'])
+    stats = Bus_Stats(schedule_code=schedule,student_id=student)
     stats.save()
 
     return render(request, "buses/view_schedule.html", {

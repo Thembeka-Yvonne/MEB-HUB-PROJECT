@@ -1,0 +1,23 @@
+-- PROCEDURE: public.add_rsvp(integer, character varying, character varying, character varying, timestamp with time zone)
+
+-- DROP PROCEDURE IF EXISTS public.add_rsvp(integer, character varying, character varying, character varying, timestamp with time zone);
+
+CREATE OR REPLACE PROCEDURE public.add_rsvp(
+	IN p_event_id integer,
+	IN p_guest_name character varying,
+	IN p_guest_studentnumber character varying,
+	IN p_guest_surname character varying,
+	IN p_done_at timestamp with time zone)
+LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+    INSERT INTO events_rsvp (event_id, guest_name, guest_studentnumber, guest_surname,done_at)
+    VALUES (p_event_id, p_guest_name, p_guest_studentnumber, p_guest_surname, p_done_at);
+
+    UPDATE events_event
+    SET attendance_count = attendance_count + 1
+    WHERE event_id = p_event_id;
+END;
+$BODY$;
+ALTER PROCEDURE public.add_rsvp(integer, character varying, character varying, character varying, timestamp with time zone)
+    OWNER TO postgres;

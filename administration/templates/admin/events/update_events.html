@@ -87,6 +87,15 @@
         .form-check-input {
             margin-top: 0.5em;
         }
+
+        .form-input{
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
         .btn-primary {
             background-color: #3498db;
             border-color: #3498db;
@@ -107,6 +116,28 @@
         .btn-outline-secondary:hover {
             transform: translateY(-2px);
         }
+
+            .custom-back-button {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 2px solid #0d6efd; /* Bootstrap primary color */
+  color: #0d6efd;
+  background-color: transparent;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.custom-back-button:hover {
+  background-color: #0d6efd;
+  color: #fff;
+  text-decoration: none;
+}
+
+.back-button-container {
+  margin: 1rem;
+}
         @media (max-width: 576px) {
             .button-group {
                 flex-direction: column;
@@ -141,18 +172,26 @@
         <div class="header">
                 <h1>Events</h1>
         </div>
+         <div class="back-button-container">
+            <a href="{% url 'events_menu' %}" class="custom-back-button">
+                <i class="bi bi-arrow-left-circle"></i> Back
+            </a>
+        </div>
         <div class="form-content">
             <form action="{% url 'update_events' %}?adminID={{admin.admin_id}}" method="POST">
                 {% csrf_token %}
 
                 {% if events %}
                     <div class="events-container mb-4">
+                        <input type="text" class="form-input dropdown-toggle" id="eventSearch"
+                            placeholder="Search events by title, location, or date..." autocomplete="off"
+                            data-bs-toggle="dropdown" aria-expanded="false">
                         {% for event in events %}
-                            <div class="form-check">
+                            <div class="form-check" id="eventsList">
                                 <input class="form-check-input" type="radio" name="event_id" id="event{{event.event_id}}" value="{{event.event_id}}" required>
                                 <label class="form-check-label" for="event{{event.event_id}}">
                                     <div class="event-item">
-                                        <h5 class="mb-2"><i class="bi bi-calendar-date me-2"></i><b>{{ event.description }}</b></h5>
+                                        <h5 class="mb-2"><i class="bi bi-calendar-date me-2"></i><b>{{ event.title }}</b></h5>
                                         <p class="mb-1"><i class="bi bi-geo-alt me-2"></i>Location: {{ event.location }}</p>
                                         <p class="mb-1"><i class="bi bi-clock me-2"></i>Date: {{ event.date }}</p>
                                         {% if event.start_time %}
@@ -165,7 +204,7 @@
                     </div>
                 {% else %}
                     <div class="alert alert-info text-center">
-                        <i class="bi bi-info-circle-fill me-2"></i>No events found for this admin.
+                        <i class="bi bi-info-circle-fill me-2"></i>No events found.
                     </div>
                 {% endif %}
 
@@ -175,13 +214,28 @@
                         <i class="bi bi-pencil-square me-2"></i>Edit Selected Event
                     </button>
                 </div>
-                <div class="back-link">
-                        <a href="{% url 'events_menu' %}?adminEmail={{admin.email}}" class="back-link">← Back to Events Menu</a>
-                </div>
             </form>
         </div>
     </div>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const eventSearch = document.getElementById('eventSearch');
+    const eventItems = document.querySelectorAll('.form-check');
+
+    eventSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+
+        eventItems.forEach(item => {
+            const eventText = item.textContent.toLowerCase();
+            item.style.display = (searchTerm === '' || eventText.includes(searchTerm))
+                ? '' // Reset to default display
+                : 'none';
+        });
+    });
+});
+</script>
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
