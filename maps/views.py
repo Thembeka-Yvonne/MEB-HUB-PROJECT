@@ -40,6 +40,7 @@ def display_map_menu(request):
     })
 
 def add_location(request):
+    initials = request.session.get("initials")
     locations = CampusLocation.objects.all()
     errors = {}
 
@@ -85,11 +86,11 @@ def add_location(request):
             return redirect('add_location')  # Redirect to clear the form
 
     return render(request, 'map/add_location.html',{
-        'errors':errors
+        'errors':errors,'initials':initials
     })
 
 def remove_location(request):
-
+    initials = request.session.get("initials")
     locations = CampusLocation.objects.all()
     
     if request.method == 'POST':
@@ -105,20 +106,20 @@ def remove_location(request):
         
         
     return render(request,'map/remove_location.html',{
-        'locations': locations
+        'locations': locations,'initials':initials
     })
 
 
 def view_all(request):
-    
+    initials = request.session.get("initials")
     locations = CampusLocation.objects.all()
     
     return render(request,'map/view_all_location.html',{
-        'locations': locations
+        'locations': locations,'initials':initials
     })
     
 def update_location(request,id):
-    
+    initials = request.session.get("initials")
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description', '')
@@ -154,5 +155,5 @@ def update_location(request,id):
     
     camp_loc = CampusLocation.objects.all().get(id=id)
     return render(request,"map/update_location.html",{
-        "camp_loc": camp_loc
+        "camp_loc": camp_loc,'initials':initials
     })
