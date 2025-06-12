@@ -54,7 +54,7 @@ def add_bus_schedule(request,code):
   bus_list = Bus.objects.all()
   initials = request.session.get("initials")
   
-  error = {}
+  errors = {}
   
   if request.method == 'POST':
 
@@ -65,47 +65,59 @@ def add_bus_schedule(request,code):
     
     # Basic field validation
     if not bus or not start_time or not last_time or not duration:
-        error['form'] = "All fields are required."
+        errors['form'] = "All fields are required."
     
     s_time = datetime.strptime(start_time, '%H:%M')
     l_time = datetime.strptime(last_time, '%H:%M')
     
-    Bus_schedule.objects.filter(schedule_code=code).delete()
+    if l_time < s_time:
+      errors['time error'] = "Last time should not be earlier than start time"
+      
+    # if duration > 2 or duration < 1 :
+    #   errors['duration error'] = "Duration should be between 1 and 2"
     
     n_time = datetime.strptime(start_time, '%H:%M')
       
-    while n_time < l_time:
-      
-      n_time = s_time + timedelta(hours=duration)
-      
-      bus_s = Bus_schedule(departure=schedule_c.campus1,destination=schedule_c.campus2,
-                             departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
-                             bus_id=bus,schedule_code=schedule_c)
+    if not errors:
+      Bus_schedule.objects.filter(schedule_code=code).delete()
+      n_time = datetime.strptime(start_time, '%H:%M')
+      while n_time < l_time:
+        n_time = s_time + timedelta(minutes=duration)
         
-      bus_s.save()
+        bus_s = Bus_schedule(departure=schedule_c.campus1,destination=schedule_c.campus2,
+                               departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
+                               bus_id=bus,schedule_code=schedule_c)
+          
+        bus_s.save()
+          
+        s_time = n_time + timedelta(minutes=duration)
+        n_time = s_time + timedelta(minutes=duration)
         
-      s_time = n_time + timedelta(hours=duration)
-      n_time = s_time + timedelta(hours=duration)
-      
-      if n_time > l_time:
-        break
+        if n_time > l_time:
+          break
+    
+        bus_s = Bus_schedule(departure=schedule_c.campus2,destination=schedule_c.campus1,
+                          departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
+                          bus_id=bus,schedule_code=schedule_c)
+        bus_s.save()
+          
+        s_time = n_time + timedelta(minutes=duration)
+          
+      admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
+      addAction(admin_id=admin,record_type="Generated bus schedule",icon="bi bi-bus-front")
+      return HttpResponseRedirect(redirect_to='/administration/bus_menu')
+    else:
+        return render(request,"admin/buses/add_schedule.html",{
+          "schedule": schedule_c,
+          "bus_list": bus_list,"initials":initials,
+          "errors": errors
+        })
   
-      bus_s = Bus_schedule(departure=schedule_c.campus2,destination=schedule_c.campus1,
-                        departure_time=s_time.time(),arrival_time=n_time.time(),duration=duration,
-                        bus_id=bus,schedule_code=schedule_c)
-      bus_s.save()
-        
-      s_time = n_time + timedelta(hours=duration)
-        
-    admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
-    addAction(admin_id=admin,record_type="Generated bus schedule",icon="bi bi-bus-front")
-    return HttpResponseRedirect(redirect_to='/administration/bus_menu')
-      
-  else:
-    return render(request,"admin/buses/add_schedule.html",{
-      "schedule": schedule_c,
-      "bus_list": bus_list,"initials":initials
-    })
+  return render(request,"admin/buses/add_schedule.html",{
+        "schedule": schedule_c,
+        "bus_list": bus_list,"initials":initials,
+        "errors": errors
+      })
   
 def events_menu(request):
   Event.objects.filter(date__lt=date.today()).delete()  # automatically delete events
