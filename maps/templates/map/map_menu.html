@@ -18,10 +18,10 @@
         <div class="sidebar">
             <ul class="sidebar-menu">
                 <li><a href="{% url 'admin_home' %}" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li><a href="{% url 'bus_menu' %}"><i class="bi bi-bus-front"></i> Bus Management</a></li>
-                <li><a href="{% url 'events_menu' %}"><i class="bi bi-calendar-event"></i> Events Management</a></li>
-                <li><a href="{% url 'display_map_menu' %}"><i class="bi bi-map"></i>Maps</a></li>
                 <li><a href="{% url 'user_management' %}"><i class="bi bi-people-fill"></i> User Management</a></li>
+                <li><a href="{% url 'bus_menu' %}"><i class="bi bi-bus-front"></i> Bus Management</a></li>
+                <li><a href="{% url 'display_map_menu' %}"><i class="bi bi-map"></i>Maps</a></li>
+                <li><a href="{% url 'events_menu' %}"><i class="bi bi-calendar-event"></i> Events Management</a></li>
                 <li><a href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a></li>
                 <li><a href="{% url 'account:landing' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a></li>
             </ul>
@@ -32,9 +32,9 @@
                 <h1>Map menu</h1>
             </div>
             <div class="container">
-                <a class="card" href="{% url 'add_location' %}">Add location</a>
-                <a class="card" href="{% url 'remove_location' %}">Remove location</a>
-                <a class="card" href="{% url 'view_all' %}">Update location</a>
+                <a class="card" href="{% url 'add_location' %}">ADD LOCATION</a>
+                <a class="card" href="{% url 'remove_location' %}">REMOVE LOCATION</a>
+                <a class="card" href="{% url 'view_all' %}">UPDATE LOCATION</a>
             </div>
         </div>
     </div>
