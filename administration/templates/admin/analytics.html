@@ -144,40 +144,13 @@
       <div class="sidebar">
         <ul class="sidebar-menu">
           <li>
-            <a href="{% url 'admin_home' %}" class="active"
-              ><i class="bi bi-speedometer2"></i> Dashboard</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'user_management' %}"
-              ><i class="bi bi-people-fill"></i> User Management</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'bus_menu' %}"
-              ><i class="bi bi-bus-front"></i> Bus Management</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'display_map_menu' %}"
-              ><i class="bi bi-map"></i>Maps</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'events_menu' %}"
-              ><i class="bi bi-calendar-event"></i> Events Management</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'analytics' %}"
-              ><i class="bi bi-bar-chart-line"></i> Analytics</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'account:landing' %}"
-              ><i class="bi bi-box-arrow-right"></i> Log Out</a
-            >
-          </li>
+                <li><a href="{% url 'admin_home' %}" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li><a href="{% url 'user_management' %}"><i class="bi bi-people-fill"></i> User Management</a></li>
+                <li><a href="{% url 'bus_menu' %}"><i class="bi bi-bus-front"></i> Bus Management</a></li>
+                <li><a href="{% url 'display_map_menu' %}"><i class="bi bi-map"></i>Maps</a></li>
+                <li><a href="{% url 'events_menu' %}"><i class="bi bi-calendar-event"></i> Events Management</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="bi bi-bar-chart-line"></i> Analytics</a></li>
+                <li><a href="{% url 'account:landing' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a></li>
         </ul>
       </div>
 
@@ -413,56 +386,35 @@
         </script>
         <!-- User javascript -->
         <script>
-
-          const wauLabels = {{ wau_labels|safe }};
-          const wauCounts = {{ wau_counts|safe }};
-
-
-
-          const createLineChart = (ctxId, labels, data, label) => {
-            const ctx = document.getElementById(ctxId).getContext('2d');
-            new Chart(ctx, {
+          const wauCtx  = document.getElementById('wauChart').getContext('2d');
+              const userChart = new Chart(wauCtx, {
               type: 'line',
               data: {
-                labels: labels,
-                datasets: [{
-                  label: label,
-                  data: data,
-                  borderColor: 'rgba(18, 134, 173, 0.8)',
-                  backgroundColor: 'rgba(18, 134, 173, 0.2)',
-                  tension: 0.3,
-                  fill: true,
-                  pointRadius: 3,
-                  pointHoverRadius: 6
-                }]
+                  labels: {{ wau_labels|safe }},
+                  datasets: [{
+                      label: 'Users per day',
+                      data: {{ wau_counts|safe }},
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      fill: false
+                  }]
               },
               options: {
-                responsive: true,
-                scales: {
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Date'
-                    }
-                  },
-                  y: {
-                    beginAtZero: true,
-                    title: {
-                      display: true,
-                      text: 'Active Users'
-                    },
-                    ticks: {
-                       stepSize: 1,
-                       precision: 0  // Ensure whole numbers
-                    }
+                  scales: {
+                      x: {
+                          title: { display: true, text: 'Date' }
+                      },
+                      y: {
+                          title: { display: true, text: 'Number of Users' },
+                          beginAtZero: true,
+                          ticks: {
+                              stepSize: 5,
+                              precision: 0  // Ensure whole numbers
+                          }
+                      }
                   }
-                }
               }
-            });
-          };
+          });
 
-
-          createLineChart("wauChart", wauLabels, wauCounts, "Weekly Active Users");
         </script>
       </div>
     </div>
