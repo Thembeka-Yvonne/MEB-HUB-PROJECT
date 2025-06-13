@@ -10,12 +10,14 @@ from login.models import Student
 
 # Create your views here.s
 def home(request):
+    initials=request.session.get('initials')
     list = ScheduleCode.objects.all()
     return render(request,"buses/home.html",{
-        "list": list
+        "list": list,"initials":initials
     })
 
 def view_schedule(request, schedule_code):
+    initials = request.session.get('initials')
     if request.method == 'POST':
         code = request.POST['code']
         schedule_list = Bus_schedule.objects.filter(schedule_code=code)
@@ -82,6 +84,6 @@ def view_schedule(request, schedule_code):
 
     return render(request, "buses/view_schedule.html", {
         "list": schedule_list,
-        "schedule_code": schedule_code
+        "schedule_code": schedule_code,"initials":initials
     })
 
