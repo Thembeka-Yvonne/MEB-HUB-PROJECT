@@ -1,14 +1,13 @@
 import os
 from pathlib import Path
 from decouple import config
-import cloudinary
 import dj_database_url
 from django.contrib.messages import constants as messages
 
-# Build paths inside the project
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
+# Security settings
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-placeholder')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
@@ -21,11 +20,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Custom apps
     'login',
     'bus',
     'events',
     'administration',
     'maps',
+
+    # Third-party apps
     'cloudinary',
     'cloudinary_storage',
 ]
@@ -61,21 +64,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 
-# Database
-if config('DATABASE_URL', default=None):
-   DATABASES = {
+# Database configuration
+DATABASES = {
     'default': dj_database_url.config(
+        default=config('DATABASE_URL', default=None),
         conn_max_age=600,
         conn_health_checks=True
     )
-}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+} if config('DATABASE_URL', default=None) else {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
 
 # Cloudinary storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -84,11 +85,6 @@ CLOUDINARY_STORAGE = {
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
-cloudinary.config(
-    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
-    api_key=config('CLOUDINARY_API_KEY'),
-    api_secret=config('CLOUDINARY_API_SECRET')
-)
 
 # Static files
 STATIC_URL = '/static/'
@@ -96,16 +92,16 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Email
+# Email settings
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@example.com')
 
-# Twilio
+# Twilio settings
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default='your_account_sid')
 TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default='your_auth_token')
 TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER', default='+27234567890')
 
-# Authentication
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -119,7 +115,7 @@ TIME_ZONE = 'Africa/Johannesburg'
 USE_I18N = True
 USE_TZ = True
 
-# Security settings for production
+# Production security
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -130,10 +126,10 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_PRELOAD = True
 
-# Default primary key field type
+# Default primary key field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Message tags
+# Django messages
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
     messages.SUCCESS: 'success'
