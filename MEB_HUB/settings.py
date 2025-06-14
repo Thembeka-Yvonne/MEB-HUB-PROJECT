@@ -63,13 +63,12 @@ WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 
 # Database
 if config('DATABASE_URL', default=None):
-    DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=True
-        )
-    }
+   DATABASES = {
+    'default': dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True
+    )
+}
 else:
     DATABASES = {
         'default': {
