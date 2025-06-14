@@ -31,7 +31,7 @@ def campus_locations_json(request):
 
 
 def display_map(request):
-    return render(request,'map/home.html')
+    return render(request,'map/map.html')
 
 def display_map_menu(request):
     initials = request.session.get("initials")

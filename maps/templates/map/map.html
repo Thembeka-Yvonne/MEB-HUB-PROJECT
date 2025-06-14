@@ -53,6 +53,9 @@
             box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
             background: white;
         }
+        #location-list {
+            display: none; /* Hidden by default */
+        }
         .location-item {
             padding: 12px 15px;
             border-bottom: 1px solid #f0f0f0;
@@ -456,7 +459,22 @@
             }
 
             // Event listeners
-            document.getElementById("search").addEventListener("input", filterLocations);
+            document.getElementById("search").addEventListener("input", function() {
+                const searchTerm = this.value.toLowerCase();
+                const locationList = document.getElementById("location-list");
+                
+                if (searchTerm.length > 0) {
+                    locationList.style.display = "block";
+                    filterLocations();
+                } else {
+                    locationList.style.display = "none";
+                    // Show all markers when search is empty
+                    markers.forEach(marker => {
+                        marker.setVisible(true);
+                    });
+                }
+            });
+            
             document.getElementById("get-location").addEventListener("click", getLocation);
             document.getElementById("stop-tracking").addEventListener("click", stopTracking);
             document.getElementById("clear-directions").addEventListener("click", clearDirections);
@@ -812,7 +830,7 @@
     </script>
     
     <script async defer
-        src=""> //google maps key
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8ISki5PbIY9_8IeK3tya5MczauFTyWE0&callback=initMap&libraries=geometry">
     </script>
 </body>
 </html>

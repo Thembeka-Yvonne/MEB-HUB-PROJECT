@@ -190,7 +190,7 @@
         <div class="header">
           <h2 class="sub-heading">Bus schedule Trends</h2>
         </div>
-        <p><strong>Total Schedule Views:</strong> {{ total_views }}</p>
+        {% comment %} <p><strong>Total Schedule Views:</strong> {{ total_views }}</p>
 
         {% if most_viewed %}
         <p>
@@ -200,7 +200,7 @@
           most_viewed.schedule_code__campus2 }} ({{ most_viewed.view_count }}
           views)
         </p>
-        {% endif %}
+        {% endif %} {% endcomment %}
         <div class="chart-section">
           <h2>Views Per Schedule Code</h2>
           <div class="chart-container">
