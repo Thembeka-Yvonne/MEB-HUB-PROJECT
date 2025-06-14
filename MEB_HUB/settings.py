@@ -15,6 +15,7 @@ from django.contrib.messages import constants as messages
 from django.conf.global_settings import STATICFILES_DIRS, STATIC_ROOT
 import os
 from decouple import config
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -54,9 +55,9 @@ INSTALLED_APPS = [
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'your_cloud_name',
-    'API_KEY': 'your_api_key',
-    'API_SECRET': 'your_api_secret',
+    'CLOUD_NAME': 'dmtxz7zuu',
+    'API_KEY': '829553948211217',
+    'API_SECRET': 'MJXtM9vRyvLPtUEB_NUS7H6OPmE',
 }
 
 MIDDLEWARE = [
@@ -98,26 +99,26 @@ DEFAULT_FROM_EMAIL = 'noreply@example.com'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-  'default': {
-     'ENGINE': 'django.db.backends.postgresql',
-      'NAME': 'test_db',
-      'USER': 'postgres',
-      'PASSWORD': 'nhlamulo25',
-     'HOST': 'localhost',
-      'PORT': '5432'
-  }
-}
-
 # DATABASES = {
-#      'default': {     'ENGINE': 'django.db.backends.postgresql',
-#    'NAME': 'mebhubdatabase',  # Database name extracted from the URL
-#    'USER': 'mebhubdatabase',  # Database user extracted from the URL
-#    'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
-#    'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
-#    'PORT': '5432',  # Default PostgreSQL port,
+#   'default': {
+#      'ENGINE': 'django.db.backends.postgresql',
+#       'NAME': 'test_db',
+#       'USER': 'postgres',
+#       'PASSWORD': 'nhlamulo25',
+#      'HOST': 'localhost',
+#       'PORT': '5432'
+#   }
 # }
-# }
+
+DATABASES = {
+     'default': {     'ENGINE': 'django.db.backends.postgresql',
+   'NAME': 'mebhubdatabase',  # Database name extracted from the URL
+   'USER': 'mebhubdatabase',  # Database user extracted from the URL
+   'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
+   'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
+   'PORT': '5432',  # Default PostgreSQL port,
+}
+}
 
 
 # Password validation
@@ -176,4 +177,8 @@ MESSAGE_TAGS={
     messages.SUCCESS:'success'
 }
 
-
+cloudinary.config(
+  cloud_name='dmtxz7zuu',
+  api_key='829553948211217',
+  api_secret='MJXtM9vRyvLPtUEB_NUS7H6OPmE'
+)
