@@ -1,4 +1,4 @@
-from msilib.schema import tables
+from django.db import models
 from tkinter.constants import CASCADE
 
 from django.db import models
