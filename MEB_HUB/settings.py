@@ -69,7 +69,8 @@ DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL', default=None),
         conn_max_age=600,
-        conn_health_checks=True
+        conn_health_checks=True,
+        ssl_require=True  # 🔥 This forces SSL, which is required by Render's PostgreSQL
     )
 } if config('DATABASE_URL', default=None) else {
     'default': {
@@ -77,6 +78,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 # Cloudinary storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
