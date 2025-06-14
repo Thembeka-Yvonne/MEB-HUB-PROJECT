@@ -92,20 +92,51 @@ WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@example.com')
 
-# Database Configuration
-# Use dj_database_url to parse DATABASE_URL from Render
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='postgresql://mebhubdatabase:MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B@dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com:5432/mebhubdatabase'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+if config('DATABASE_URL', default=None):
+    # Production database from Render
+    DATABASES = {
+        'default': dj_database_url.parse(
+            config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True
+        )
+    }
+    
+    # Ensure SSL is properly configured for Render PostgreSQL
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS'].update({
+        'sslmode': 'require',
+        'connect_timeout': 10,
+        'options': '-c default_transaction_isolation=serializable'
+    })
+    
+else:
+    # Development database (SQLite)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
-# Add SSL configuration for PostgreSQL on Render
-DATABASES['default']['OPTIONS'] = {
-    'sslmode': 'require',
-}
+# Alternative approach - if the above doesn't work, try this:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': config('DB_NAME', default=''),
+#         'USER': config('DB_USER', default=''),
+#         'PASSWORD': config('DB_PASSWORD', default=''),
+#         'HOST': config('DB_HOST', default=''),
+#         'PORT': config('DB_PORT', default='5432'),
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#             'connect_timeout': 10,
+#         },
+#         'CONN_MAX_AGE': 600,
+#         'CONN_HEALTH_CHECKS': True,
+#     }
+# }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
