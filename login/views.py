@@ -12,7 +12,7 @@ from django.urls import reverse
 import re
 from django.utils import timezone
 from django.db.models.functions import TruncDate
-from bus.models import ScheduleCode
+from bus.models import Route
 from events.models import Event
 from .models import Student, Campus
 from django.contrib import messages
@@ -73,7 +73,7 @@ def login(request):
                         today = timezone.localdate()
                         actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id, action_date=today)
                         events = Event.objects.filter(date__year=today.year, date__month=today.month)
-                        cnt_routes=ScheduleCode.objects.count()
+                        cnt_routes=Route.objects.count()
                     except Exception as e:
                         print(f"Error fetching actions or events: {e}")
                         actions = None

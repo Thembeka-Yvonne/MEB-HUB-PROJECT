@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Bus_schedule,ScheduleCode
+from .models import Bus_schedule,Route
 from .models import Bus_Stats
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -11,7 +11,7 @@ from login.models import Student
 # Create your views here.s
 def home(request):
     initials=request.session.get('initials')
-    list = ScheduleCode.objects.all()
+    list = Route.objects.all()
     return render(request,"buses/home.html",{
         "list": list,"initials":initials
     })
@@ -77,7 +77,7 @@ def view_schedule(request, schedule_code):
 
     # GET request logic
     schedule_list = Bus_schedule.objects.filter(schedule_code=schedule_code)
-    schedule = ScheduleCode(schedule_code=schedule_code)
+    schedule = Route(schedule_code=schedule_code)
     student = Student.objects.all().get(studentNumber=request.session['stud_id'])
     stats = Bus_Stats(schedule_code=schedule,student_id=student)
     stats.save()

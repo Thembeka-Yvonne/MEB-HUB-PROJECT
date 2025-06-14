@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from login.models import Campus, Admin, Student, RegisteredStudent
-from bus.models import ScheduleCode,Bus_schedule,Bus,Bus_Stats
+from bus.models import Route,Bus_schedule,Bus,Bus_Stats
 from .models import Admin_Action
 from events.models import RSVP
 from django.urls import reverse
@@ -35,7 +35,7 @@ def admin_home(request):
   today = timezone.localdate()
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
   events = Event.objects.filter(date__year=today.year, date__month=today.month)
-  cnt_routes=ScheduleCode.objects.count()
+  cnt_routes=Route.objects.count()
 
   icon = request.GET.get('type')
   action_type = 'all'
@@ -69,7 +69,7 @@ def bus_menu(request):
   return render(request,"admin/buses/bus_menu.html",{'initials':initials})
 
 def add_all_campuses_view(request):
-  list = ScheduleCode.objects.all()
+  list = Route.objects.all()
   initials = request.session.get("initials")
   return render(request,"admin/buses/add_all_camp.html",{
     "list": list,"initials":initials
@@ -77,7 +77,7 @@ def add_all_campuses_view(request):
   
 def add_bus_schedule(request,code):
   
-  schedule_c = ScheduleCode.objects.all().get(schedule_code=code)
+  schedule_c = Route.objects.all().get(schedule_code=code)
   bus_list = Bus.objects.all()
   initials = request.session.get("initials")
   
@@ -293,7 +293,7 @@ def view_all_actions(request):
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,
                                                                                     action_date=today)
   events = Event.objects.filter(date__year=today.year, date__month=today.month)
-  cnt_routes = ScheduleCode.objects.count()
+  cnt_routes = Route.objects.count()
   context = {
     "admin": admin,
     "actions": actions,
