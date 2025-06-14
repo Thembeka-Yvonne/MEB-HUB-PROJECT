@@ -83,25 +83,25 @@
         {% csrf_token %}
 
         <input type="text" class="form-control" placeholder="Student Number" name="student_no"
-               value="{{ form_data.student_no|default:'' }}">
+               value="{{ form_data.student_no|default:'' }}" required>
         {% if errors.student_no %}<div class="text-danger">{{ errors.student_no }}</div>{% endif %}
 
         <input type="text" class="form-control" placeholder="Student Name" name="name"
-               value="{{ form_data.name|default:'' }}">
+               value="{{ form_data.name|default:'' }}" required>
         {% if errors.name %}<div class="text-danger">{{ errors.name }}</div>{% endif %}
 
         <input type="text" class="form-control" placeholder="Student Surname" name="surname"
-               value="{{ form_data.surname|default:'' }}">
+               value="{{ form_data.surname|default:'' }}" required>
         {% if errors.surname %}<div class="text-danger">{{ errors.surname }}</div>{% endif %}
 
         <input type="email" class="form-control" placeholder="Student Email" name="student_email"
-               value="{{ form_data.student_email|default:'' }}">
+               value="{{ form_data.student_email|default:'' }}" required>
         {% if errors.student_email %}<div class="text-danger">{{ errors.student_email }}</div>{% endif %}
 
         {% if errors.campus_id %}<div class="text-danger">{{ errors.campus_id }}</div>{% endif %}
 
         <div  class="password-input-group">
-          <input type="password" class="form-control" placeholder="Password" name="password" id="password">
+          <input type="password" class="form-control" placeholder="Password" name="password" id="password" required>
           <div id="passwordErrors" class="text-danger"></div>
           <button type="button" class="password-toggle" id="togglePassword" >
                       <i class="bi bi-eye-slash"></i>
@@ -109,7 +109,7 @@
         </div>
 
         <div  class="password-input-group">
-          <input type="password" class="form-control" placeholder="Confirm Password" name="confirm_password" id="confirm_password">
+          <input type="password" class="form-control" placeholder="Confirm Password" name="confirm_password" id="confirm_password" required>
           <div id="confirmError" class="text-danger"></div>
           <button type="button" class="password-toggle" id="togglePassword2" >
                       <i class="bi bi-eye-slash"></i>
@@ -119,6 +119,12 @@
       </form>
 
       <span class="account"><a href="{% url 'account:login' %}">Already have an account? Login</a></span>
+      {% for message in messages %}
+            <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+                {{message}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+      {% endfor %}
     </div>
   </div>
 

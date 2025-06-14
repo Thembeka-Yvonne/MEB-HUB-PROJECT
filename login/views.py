@@ -126,22 +126,32 @@ def register(request):
         }
 
         errors = {}
+        
+        pattern =  "@tut4life.ac.za"
 
         # Manual duplicate checks (better UX than letting the DB error)
         if not RegisteredStudent.objects.filter(studentNumber=student_no).exists():
-            errors['not tut registered'] = "The student number not found!"
+            messages.error(request,"The student number not found!")
+            return render(request,'login/register.html',{
+                'form_data': form_data
+            })
+            
         if Student.objects.filter(studentNumber=student_no).exists():
-            errors['student_no'] = "This student number is already registered."
+            messages.error(request,"This student number is already registered!")
+            return render(request,'login/register.html',{
+                'form_data': form_data
+            })
+            
         if Student.objects.filter(studentEmail=student_email).exists():
-            errors['student_email'] = "This email is already registered."
+            messages.error(request,"This email is already registered!")
+            return render(request,'login/register.html',{
+                'form_data': form_data
+            })
 
-        if password != confirm_password:
-            errors['confirm_password'] = "Passwords do not match."
-
-        if errors:
-            return render(request, 'login/register.html', {
-                'form_data': form_data,
-                'errors': errors
+        if not re.search(pattern,student_email):
+            messages.error(request,"Use TUT student email")
+            return render(request,'login/register.html',{
+                'form_data': form_data
             })
 
         try:

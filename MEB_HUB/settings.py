@@ -16,26 +16,21 @@ from django.conf.global_settings import STATICFILES_DIRS, STATIC_ROOT
 import os
 from decouple import config
 import cloudinary
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k=f1*d3i*l1d0cz3)a_z^z74722#p8&@tso9*+bd*5_kjcz&t*'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-k=f1*d3i*l1d0cz3)a_z^z74722#p8&@tso9*+bd*5_kjcz&t*')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+# Update ALLOWED_HOSTS for production
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,20 +50,20 @@ INSTALLED_APPS = [
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': '',
-    'API_KEY': '',
-    'API_SECRET': '',
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Moved up for better static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 ROOT_URLCONF = 'MEB_HUB.urls'
@@ -77,8 +72,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-                BASE_DIR/'account/templates'
-            ],
+            BASE_DIR / 'account/templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,37 +88,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@example.com'
+# Email Configuration
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@example.com')
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-# DATABASES = {
-#   'default': {
-#      'ENGINE': 'django.db.backends.postgresql',
-#       'NAME': 'test_db',
-#       'USER': 'postgres',
-#       'PASSWORD': 'nhlamulo25',
-#      'HOST': 'localhost',
-#       'PORT': '5432'
-#   }
-# }
-
+# Database Configuration
+# Use dj_database_url to parse DATABASE_URL from Render
 DATABASES = {
-     'default': {     'ENGINE': 'django.db.backends.postgresql',
-   'NAME': 'mebhubdatabase',  # Database name extracted from the URL
-   'USER': 'mebhubdatabase',  # Database user extracted from the URL
-   'PASSWORD': 'MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B',  # Database password extracted from the URL
-   'HOST': 'dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com',  # Database host extracted from the URL
-   'PORT': '5432',  # Default PostgreSQL port,
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='postgresql://mebhubdatabase:MlNLNBDZc8gde8Ogi8pLdPcu7h5YBy3B@dpg-cvhotitumphs7391cqgg-a.oregon-postgres.render.com:5432/mebhubdatabase'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
-}
-
 
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -139,46 +118,51 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Africa/Johannesburg'
-
 USE_I18N = True
-
 USE_TZ = True
 
-TWILIO_ACCOUNT_SID = 'your_account_sid'
-TWILIO_AUTH_TOKEN = 'your_auth_token'
-TWILIO_PHONE_NUMBER = '+27234567890'
-
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default='your_account_sid')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default='your_auth_token')
+TWILIO_PHONE_NUMBER = config('TWILIO_PHONE_NUMBER', default='+27234567890')
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [
-    BASE_DIR/"static"
+    BASE_DIR / "static"
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATIC_ROOT = os.path.join(BASE_DIR,'productionfiles')
+# WhiteNoise configuration for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MESSAGE_TAGS={
-    messages.ERROR:'danger',
-    messages.SUCCESS:'success'
+# Message tags
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+    messages.SUCCESS: 'success'
 }
 
+# Cloudinary configuration using environment variables
 cloudinary.config(
-  cloud_name='',
-  api_key='',
-  api_secret=''
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+    api_key=config('CLOUDINARY_API_KEY'),
+    api_secret=config('CLOUDINARY_API_SECRET')
 )
+
+# Security settings for production
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_REDIRECT_EXEMPT = []
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_PRELOAD = True
