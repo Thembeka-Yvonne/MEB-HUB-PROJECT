@@ -285,31 +285,124 @@
 
 <!-- Navigation Bar -->
   <nav>
-    <div class="nav-title">BUS SCHEDULE MENU</div>
-    <div>
-        <ul>
-            <li><a href="{% url 'account:home' %}">Home</a></li>
-            <li><a href="{% url 'account:about' %}">About</a></li>
-            <li><a href="{% url 'account:contact' %}">Contact</a></li>
-        </ul>
-    <div>
-  </nav>
-
-
-    <div class="container">
-        {% for code in list %}
-        <a href="view_schedule/{{code.schedule_code}}">
-            <div class="card">
-                {{ code.campus2 }} 
-            </div>
-        </a>
-        {% endfor %}
+    <div class="nav-title">M.E.B</div>
+    <button class="profile-button" onclick="toggleMenu()">
+      <span id="user-initials">{{ initials }}</span>
+    </button>
+    <div class="nav-menu" id="navMenu">
+      <a href="{% url 'account:update_profile' %}?studEmail={{email.studentEmail}}"><i class="bi bi-person-circle"></i> Profile</a>
+      <a href="{% url 'account:about' %}"><i class="bi bi-info-circle-fill"></i> About Us</a>
+      <a href="{% url 'account:contact' %}"><i class="bi bi-envelope-fill"></i> Contact Us</a>
+      <a href="{% url 'account:logout' %}"><i class="bi bi-box-arrow-right"></i> Log Out</a>
     </div>
-     <footer class="footer">
-  <div style="text-align: center; padding: 10px; font-size: 0.9rem;">
-    &copy; 2025 M.E.B. All Rights Reserved.
+  </nav>
+    <!-- Back Button -->
+    <div class="mb-4 ms-3 mt-3">
+      <button class="btn btn-outline-primary" onclick="goBack()">
+        <i class="bi bi-arrow-left-circle"></i> Back
+      </button>
+    </div>
+<!-- Page Header -->
+<div class="container page-header">
+  <h2>Select a Route to View the Schedule</h2>
+</div>
+
+
+<!-- Search Bar -->
+<div class="search-container">
+  <i class="bi bi-search search-icon"></i>
+  <input type="text" id="routeSearch" class="form-control search-bar" placeholder="Search routes by campus...">
+</div>
+
+<!-- Schedule Cards -->
+<div class="container">
+  <div class="row g-4" id="routeList">
+    {% for code in list %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{% url 'view_schedule' code.schedule_code %}" class="text-decoration-none route-card" data-campus="{{ code.campus1 }} {{ code.campus2 }} {{ code.campus2 }} {{ code.campus1 }}">
+        <div class="card p-4 text-center h-100">
+          <i class="bi bi-bus-front-fill mb-3"></i>
+          <h5 class="fw-bold mb-2">
+            {{ code.campus1 }} <span class="route-arrow"><i class="bi bi-arrow-right"></i></span> {{ code.campus2 }}
+          </h5>
+          <p class="text-muted mb-0">View available schedules</p>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <h4>No schedules available</h4>
+        <p class="text-muted">Check back later for updated bus schedules</p>
+      </div>
+    </div>
+    {% endfor %}
   </div>
-</footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p class="text-muted">© 2023 M.E.B Bus Schedule System. All rights reserved.</p>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Search Functionality -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("routeSearch");
+    const cards = document.querySelectorAll(".route-card");
+
+    searchInput.addEventListener("input", function () {
+      const query = searchInput.value.toLowerCase().trim();
+
+      let hasResults = false;
+
+      cards.forEach(card => {
+        const cardElement = card.closest('.col-md-6, .col-lg-4');
+        const campuses = card.getAttribute("data-campus").toLowerCase();
+        if (campuses.includes(query)) {
+          cardElement.style.display = "block";
+          hasResults = true;
+        } else {
+          cardElement.style.display = "none";
+        }
+      });
+
+      // Show empty state if no results
+      const emptyState = document.querySelector(".empty-state");
+      if (emptyState) {
+        emptyState.style.display = hasResults ? "none" : "block";
+      }
+    });
+  });
+      function toggleMenu() {
+      const menu = document.getElementById("navMenu");
+      menu.classList.toggle("show");
+
+      if (menu.classList.contains("show")) {
+        document.addEventListener("click", closeMenuOnClickOutside);
+      } else {
+        document.removeEventListener("click", closeMenuOnClickOutside);
+      }
+    }
+
+    function closeMenuOnClickOutside(e) {
+      const menu = document.getElementById("navMenu");
+      const button = document.querySelector(".profile-button");
+
+      if (!menu.contains(e.target) && !button.contains(e.target)) {
+        menu.classList.remove("show");
+        document.removeEventListener("click", closeMenuOnClickOutside);
+      }
+    }
+function goBack() {
+  window.location.href = "{% url 'account:home' %}";
+}
+
+</script>
+
 </body>
 </html>

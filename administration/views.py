@@ -26,7 +26,7 @@ from django.db.models import Sum
 import json
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from django.utils.safestring import mark_safe
-
+from django.utils.timezone import localtime
 
 # Create your views here.
 def admin_home(request):
@@ -36,12 +36,25 @@ def admin_home(request):
   actions = Admin_Action.objects.annotate(action_date=TruncDate('datetime')).filter(admin_id=admin.admin_id,action_date=today)
   events = Event.objects.filter(date__year=today.year, date__month=today.month)
   cnt_routes=ScheduleCode.objects.count()
+
+  icon = request.GET.get('type')
+  action_type = 'all'
+  if icon == 'bi bi-map':
+      action_type = 'Map Actions'
+  elif icon == 'bi bi-calendar':
+      action_type = 'Event Actions'
+  elif icon == 'bi bi-bus-front':
+      action_type = 'Bus Actions'
+  else :
+      action_type="All Actions"
+
   context={
     "admin":admin,
     "actions" :actions,
     "events" :events,
     "initials": f"{admin.name[0].upper()}{admin.surname[0].upper()}",
-    "cnt_routes":cnt_routes
+    "cnt_routes":cnt_routes,
+    "action_type":action_type
   }
   return render(request,"admin/admin.html",context
   )
@@ -928,11 +941,11 @@ def download_student_details_pdf(request):
 
   # Title
   p.setFont("Helvetica-Bold", 16)
-  p.drawString(50, y, "Student Details")
-  y -= 30
-
+  p.drawString(50, y, "Student Details: ")
+  y -= 15
   p.line(50, y, 550, y)
-  y -= 25
+  y -= 5
+  y-=15
 
   p.setFont("Helvetica", 12)
   p.drawString(50, y, f"Student Number: {student.studentNumber}")
@@ -945,8 +958,60 @@ def download_student_details_pdf(request):
   y -= 20
   p.drawString(50, y, f"Campus: {student.campus_id.campus_name if student.campus_id else 'N/A'}")
   y -= 20
-  p.drawString(50, y,
-               f"Last Login Time: {student.login_time.strftime('%Y-%m-%d') if student.login_time else 'N/A'}")
+  p.drawString(50, y,f"Last Login Time: {student.login_time.strftime('%Y-%m-%d %H:%M') if student.login_time else 'N/A'}")
+  y -= 20
+
+  y -= 15
+
+  # Section 1: Event RSVPs
+  p.setFont("Helvetica-Bold", 14)
+  p.drawString(50, y, "Event RSVPs done by student")
+  y -= 5
+  p.line(50, y, 550, y)
+  y -= 5
+  y-=15
+  p.setFont("Helvetica", 12)
+
+  rsvps = RSVP.objects.filter(guest_studentnumber=student.studentNumber).order_by('done_at')
+
+  if rsvps.exists():
+        for rsvp in rsvps:
+            if y < 100:
+                p.showPage()
+                y = height - 50
+                p.setFont("Helvetica", 12)
+            p.drawString(60, y, f"- {rsvp.done_at.strftime('%Y-%m-%d %H:%M')} : RSVP’d to {rsvp.event.title}")
+            y -= 20
+  else:
+        p.drawString(60, y, "No event RSVPs.")
+        y -= 20
+
+  y -= 15
+
+  # Section 2: Bus Schedule views
+  p.setFont("Helvetica-Bold", 14)
+  p.drawString(50, y, "Bus schedule views by student")
+  y -= 5
+  p.line(50, y, 550, y)
+  y -= 5
+  y -= 15
+  p.setFont("Helvetica", 12)
+  bus_views = Bus_Stats.objects.filter(student_id=student.studentNumber).order_by('viewed_at')
+
+  if bus_views.exists():
+      for view in bus_views:
+          if y < 100:
+              p.showPage()
+              y = height - 50
+              p.setFont("Helvetica", 12)
+          p.drawString(60, y,f"- {view.viewed_at.strftime('%Y-%m-%d %H:%M')} : Viewed bus schedule of '{view.schedule_code}'")
+
+          y -= 20
+  else:
+      p.drawString(60, y, "No bus schedule views.")
+      y -= 20
+
+  y -= 20
 
   p.save()
   return response
@@ -960,7 +1025,7 @@ def download_student_details_csv(request):
 
   writer = csv.writer(response)
   # Header row
-  writer.writerow(['Student Number', 'Name', 'Surname', 'Email', 'Campus', 'Date Registered'])
+  writer.writerow(['Student Number', 'Name', 'Surname', 'Email', 'Campus', 'Last Login '])
 
   # Data row
   writer.writerow([
@@ -969,23 +1034,123 @@ def download_student_details_csv(request):
     student.surname,
     student.studentEmail,
     student.campus_id.campus_name if student.campus_id else "N/A",
-    student.login_time.strftime('%Y-%m-%d') if student.login_time else "N/A"
+    student.login_time.strftime('%Y-%m-%d %H:%M') if student.login_time else "N/A"
   ])
 
+  writer.writerow(['Bus Schedule Views by student'])
+  writer.writerow(['Timestamp', 'Schedule Code'])
+
+  bus_views = Bus_Stats.objects.filter(student_id=student.studentNumber).order_by('viewed_at')
+  if bus_views.exists():
+      for view in bus_views:
+          writer.writerow([view.viewed_at.strftime('%Y-%m-%d %H:%M'), view.schedule_code])
+  else:
+      writer.writerow(["No bus schedule."])
+
+  writer.writerow([])  # empty row
+
+  # Section 3: Event RSVPs
+  writer.writerow(['Event RSVPs done by student'])
+  writer.writerow(['Timestamp', 'Event Name'])
+
+  rsvps = RSVP.objects.filter(guest_studentnumber=student.studentNumber).order_by('done_at')
+  if rsvps.exists():
+      for rsvp in rsvps:
+          writer.writerow([rsvp.done_at.strftime('%Y-%m-%d %H:%M'), rsvp.event.title])
+  else:
+      writer.writerow(["No event RSVPs."])
   return response
 
 def get_user_activity_data():
-    now = timezone.now()
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday())  # Monday
+    week_dates = [start_of_week + timedelta(days=i) for i in range(7)]
+    labels = [d.strftime("%Y-%m-%d") for d in week_dates]
 
+    # Query for WAU
+    wau_raw = (
+        Student.objects
+        .filter(login_time__date__gte=start_of_week, login_time__date__lte=today)
+        .annotate(day=TruncDate('login_time'))
+        .values('day')
+        .annotate(count=Count('studentNumber'))
+        .order_by('day')
+    )
 
-    # Weekly Active Users (last 8 weeks)
-    wau = Student.objects.filter(login_time__gte=now - timezone.timedelta(weeks=8)) \
-        .annotate(week=TruncWeek('login_time')) \
-        .values('week') \
-        .annotate(count=Count('studentNumber')) \
-        .order_by('week')
+    # Create a date-to-count dictionary
+    wau_map = {entry['day'].strftime('%Y-%m-%d'): entry['count'] for entry in wau_raw}
+
+    # Ensure all 7 days are covered (fill missing days with 0)
+    counts = [wau_map.get(day, 0) for day in labels]
 
     return {
-        'wau_labels': mark_safe(json.dumps([item['week'].strftime('%Y-%m-%d') for item in wau])),
-        'wau_counts': mark_safe(json.dumps([item['count'] for item in wau])),
+        'wau_labels': json.dumps(labels),
+        'wau_counts': json.dumps(counts)
     }
+
+def admin_report(request):
+    icon = request.GET.get('type')
+    admin_id=request.session.get('admin_id')
+    admin=Admin.objects.get(admin_id=admin_id)
+
+    action_type='all'
+    if icon=='bi bi-map':
+        action_type='Bus Actions'
+    if icon=='bi bi-calendar':
+        action_type='Event Actions'
+    elif icon=='bi bi-bus-front':
+        action_type='Bus Actions'
+
+    if icon and icon!= 'all':
+        actions = Admin_Action.objects.filter(icon=icon,admin_id=admin.admin_id)
+    else:
+        actions = Admin_Action.objects.all()
+
+        # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{action_type}_admin_report.pdf"'
+
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    y = height
+
+    # Title
+    p.setFont("Helvetica", 12)
+    p.drawString(50, y, f"Admin ID: {admin.admin_id}")
+    y -= 20
+    p.drawString(50, y, f"Name: {admin.name}")
+    y -= 20
+    p.drawString(50, y, f"Admin ID: {admin.admin_id}")
+    y -= 20
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawCentredString(width / 2.0, height - 50, f"Admin Report - {action_type.upper()}")
+
+
+    # Table headers
+    y = height - 90
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, "Description")
+    p.drawString(480, y, "Timestamp")
+
+    y -= 20
+    p.setFont("Helvetica", 10)
+
+    for action in actions:
+        if y < 50:
+            p.showPage()
+            y = height - 50
+            p.setFont("Helvetica", 10)
+
+        action_type = action.get_action_type_display() if hasattr(action,'get_action_type_display') else action.action_type
+        timestamp = localtime(action.datetime).strftime('%Y-%m-%d %H:%M')
+
+        p.drawString(150, y, action_type)
+        p.drawString(480, y, timestamp)
+
+        y -= 18
+
+    p.showPage()
+    p.save()
+
+    return response
