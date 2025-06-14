@@ -102,6 +102,11 @@ DATABASES = {
     )
 }
 
+# Add SSL configuration for PostgreSQL on Render
+DATABASES['default']['OPTIONS'] = {
+    'sslmode': 'require',
+}
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
