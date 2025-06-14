@@ -55,9 +55,9 @@ INSTALLED_APPS = [
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dmtxz7zuu',
-    'API_KEY': '829553948211217',
-    'API_SECRET': 'MJXtM9vRyvLPtUEB_NUS7H6OPmE',
+    'CLOUD_NAME': '',
+    'API_KEY': '',
+    'API_SECRET': '',
 }
 
 MIDDLEWARE = [
@@ -178,7 +178,7 @@ MESSAGE_TAGS={
 }
 
 cloudinary.config(
-  cloud_name='dmtxz7zuu',
-  api_key='829553948211217',
-  api_secret='MJXtM9vRyvLPtUEB_NUS7H6OPmE'
+  cloud_name='',
+  api_key='',
+  api_secret=''
 )
