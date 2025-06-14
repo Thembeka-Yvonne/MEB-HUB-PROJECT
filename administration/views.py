@@ -1095,7 +1095,7 @@ def admin_report(request):
 
     action_type='all'
     if icon=='bi bi-map':
-        action_type='Bus Actions'
+        action_type='Map Actions'
     if icon=='bi bi-calendar':
         action_type='Event Actions'
     elif icon=='bi bi-bus-front':
