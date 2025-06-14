@@ -3,6 +3,7 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 from django.contrib.messages import constants as messages
+import urllib.parse as urlparse
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -65,20 +66,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'MEB_HUB.wsgi.application'
 
 # Database configuration
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=None),
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True  # 🔥 This forces SSL, which is required by Render's PostgreSQL
-    )
-} if config('DATABASE_URL', default=None) else {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATABASE_URL = config('DATABASE_URL', default=None)
 
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+    }
+
+    # Force SSL mode
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require'
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Cloudinary storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
