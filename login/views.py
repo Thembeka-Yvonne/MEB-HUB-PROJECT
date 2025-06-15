@@ -199,7 +199,7 @@ def home(request):
         "email": stud,
         "initials": initials })
     else:
-        return render(request,'login/landing_about.html')
+        return render(request,"login/landing_page.html")
         
 def about(request):
     return render(request,'about_us/about_us.html')
