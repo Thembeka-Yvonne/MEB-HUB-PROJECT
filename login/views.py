@@ -191,13 +191,16 @@ def logout_view(request):
     return redirect('account:landing')
 
 def home(request):
-    stud = Student.objects.all().get(studentNumber=request.session['stud_id'])
-    initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
-    request.session["initials"] = initials
-    return render(request,"home/home.html",{
-      "email": stud,
-      "initials": initials })
-    
+    if 'stud_id' in request.session:
+        stud = Student.objects.all().get(studentNumber=request.session['stud_id'])
+        initials = f"{stud.name[0].upper()}{stud.surname[0].upper()}"
+        request.session["initials"] = initials
+        return render(request,"home/home.html",{
+        "email": stud,
+        "initials": initials })
+    else:
+        return render(request,'login/landing_about.html')
+        
 def about(request):
     return render(request,'about_us/about_us.html')
 def contact(request):
