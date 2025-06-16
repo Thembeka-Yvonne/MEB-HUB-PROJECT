@@ -56,9 +56,17 @@ def add_location(request):
             latitude = float(latitude)
             longitude = float(longitude)
         except (TypeError, ValueError):
-            messages.error(request, 'Invalid latitude or longitude')
-            return render(request, 'map/add_location.html')
-
+            errors['invalid values'] = 'Invalid latitude or longitude'
+            return render(request, 'map/add_location.html', {
+            'errors': errors, 
+            'initials': initials })      
+        
+        if name.isdigit() :
+            errors['invali name'] = "Location name cannot be only digits!"
+        
+        if description.isdigit() :
+            errors['invalid description'] = "description cannot be only digits!"
+            
         for loc in locations:
             if ((loc.name.lower() == name.lower()) or (loc.latitude == latitude and loc.longitude == longitude )) :
                 errors['duplicate locations'] = 'The location already exists!'
@@ -119,7 +127,11 @@ def view_all(request):
     })
     
 def update_location(request,id):
-    initials = request.session.get("initials")
+    
+    locations = CampusLocation.objects.all()
+    camp_loc = CampusLocation.objects.all().get(id=id)
+    errors = {}
+    
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description', '')
@@ -128,32 +140,49 @@ def update_location(request,id):
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
         
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except (TypeError, ValueError):
+            errors['invalid values'] = 'Invalid latitude or longitude'
+ 
+        for loc in locations:
+            if  not loc.id == id :
+                if ((loc.name.lower() == name.lower()) or (loc.latitude == latitude and loc.longitude == longitude )) :
+                    errors['duplicate locations'] = 'The location already exists!'
+                
+        if name.isdigit() :
+            errors['invali name'] = "Location name cannot be only digits!"
+        
+        if description.isdigit() :
+            errors['invalid description'] = "description cannot be only digits!"
+        
         # Upload image to Cloudinary
-        image_url = None
-        if image_file:
-            upload_result = cloudinary.uploader.upload(image_file)
-            image_url = upload_result.get('secure_url')
+        
+        if not errors:
+            image_url = None
+            if image_file and image_file != 'None':  # Add this check
+                upload_result = cloudinary.uploader.upload(image_file)
+                image_url = upload_result.get('secure_url')
 
-        # Assuming you have a way to get admin from request.user
-        admin =  Admin.objects.get(admin_id=request.session["admin_id"])  # adapt this to your auth system
-        
-        camp_location = CampusLocation.objects.all().get(id=id)
+            # Assuming you have a way to get admin from request.user
+            admin =  Admin.objects.get(admin_id=request.session["admin_id"])  # adapt this to your auth system
 
-        camp_location.name = name
-        camp_location.description = description
-        camp_location.icon = icon
-        camp_location.longitude = longitude
-        camp_location.latitude = latitude
-        camp_location.admin_id = admin
-        
-        camp_location.save()
-        
-        admin = Admin.objects.all().get(admin_id=request.session['admin_id'])
-        addAction(admin_id=admin,record_type="Updated campus location",icon="bi bi-map")
-        messages.success(request, 'Location Updated successfully!')
-        return redirect('update_location',id=id)  # Redirect to clear the form
+            camp_loc.name = name
+            camp_loc.description = description
+            camp_loc.icon = icon
+            camp_loc.longitude = longitude
+            camp_loc.latitude = latitude
+            camp_loc.admin_id = admin
+            if image_url:
+                camp_loc.image_url = image_url
+            
+            camp_loc.save()
+            
+            messages.success(request, 'Location Updated successfully!')
+            return redirect('update_location',id=id)  # Redirect to clear the form      
     
-    camp_loc = CampusLocation.objects.all().get(id=id)
     return render(request,"map/update_location.html",{
-        "camp_loc": camp_loc,'initials':initials
+        "camp_loc": camp_loc,
+        "errors": errors
     })

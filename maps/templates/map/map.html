@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>University Campus Map</title>
     <link rel="stylesheet" href="{% static 'assets/styles/bus_home.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #map {
             height: 100vh;
@@ -167,6 +169,16 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(234, 67, 53, 0.4);
         }
+        #refresh-location {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+            display: none;
+        }
+        #refresh-location:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
         select {
             margin: 8px 0;
             padding: 12px 15px;
@@ -277,44 +289,110 @@
             background: #f44336;
         }
         /* Responsive design */
+        @media (max-width: 1024px) {
+            #sidebar, #controls {
+            width: 220px;
+            }
+        }
         @media (max-width: 768px) {
             #sidebar, #controls {
-                width: 250px;
+            width: 90vw;
+            max-width: 320px;
+            min-width: 180px;
             }
             #sidebar {
-                left: 5px;
-                top: 60px;
+            left: 5vw;
+            top: 60px;
             }
             #controls {
-                right: 5px;
-                top: 60px;
+            right: 5vw;
+            top: 60px;
             }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
             #sidebar, #controls {
-                width: calc(100vw - 20px);
+                width: 96vw;
+                left: 2vw !important;
+                right: 2vw !important;
+                max-width: none;
+                min-width: 0;
+                padding: 10px;
+                top: 56px;
+                z-index: 1001;
+                transition: transform 0.3s ease;
+            }
+            #sidebar.collapsed, #controls.collapsed {
+                transform: translateY(-120%);
+                pointer-events: none;
+                opacity: 0;
+            }
+            #map {
+                height: 100vh;
+                width: 100vw;
+            }
+            .toggle-btn {
+                display: block;
+                position: fixed;
+                top: 10px;
                 left: 10px;
-                right: 10px;
+                z-index: 1100;
+                background: #1a73e8;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+                box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
-            #controls {
-                top: auto;
-                bottom: 10px;
+            .mobile-toolbar {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1100;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        align-items: center;
+    }
+    #hamburger-btn,
+    #search-btn {
+        position: static;
+        margin: 0;
+        top: auto;
+        left: auto;
+    }
+        }
+        /* Hide toggle button on desktop */
+        @media (min-width: 601px) {
+            .toggle-btn {
+                display: none;
             }
         }
-        /* Enhanced scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(26, 115, 232, 0.3);
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(26, 115, 232, 0.5);
+        /* Remove background and roundness for the hamburger icon */
+        @media (max-width: 600px) {
+            .toggle-btn {
+                background: transparent !important;
+                color: white;
+                border: none;
+                border-radius: 0 !important;
+                width: auto;
+                height: auto;
+                box-shadow: none !important;
+                padding: 0;
+                margin: 0;
+                font-size: 28px;
+                min-width: 0;
+                min-height: 0;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -327,17 +405,19 @@
                 <li><a href="{% url 'account:about' %}">About</a></li>
                 <li><a href="{% url 'account:contact' %}">Contact</a></li>
             </ul>
-        <div>
+        </div>
     </nav>
     
-    <div id="sidebar">
+    <!-- Add 'collapsed' class to sidebar and controls by default -->
+    <div id="sidebar" class="collapsed">
         <h2>Campus Locations</h2>
         <input id="search" type="text" placeholder="🔍 Search locations..." />
         <div id="location-list"></div>
     </div>
     
-    <div id="controls">
+    <div id="controls" class="collapsed">
         <button id="get-location">Get My Location</button>
+        <button id="refresh-location">Refresh Location</button>
         <button id="stop-tracking">Stop Tracking</button>
         <select id="travel-mode">
             <option value="WALKING">🚶 Walking</option>
@@ -354,6 +434,17 @@
     </div>
     
     <div id="map"></div>
+
+    <div class="mobile-toolbar">
+        <button class="toggle-btn" id="hamburger-btn" onclick="togglePanels()" aria-label="Menu">☰</button>
+        <button class="toggle-btn" id="search-btn" onclick="toggleSearchSidebar()" aria-label="Search">
+            <!-- Material Design Search SVG Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" height="28" width="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </button>
+    </div>
 
     <script>
         const iconMap = {
@@ -379,23 +470,27 @@
         let selectedTravelMode = "WALKING";
         let lastDestination = null;
         let isTracking = false;
+        let autoUpdateEnabled = false; // New variable to control auto-updates
 
         async function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: -25.540769, lng: 28.096378 },
-                zoom: 16,
-                mapTypeId: "hybrid",
+                zoom: 18,
+                mapTypeId: "roadmap",
                 styles: [
                     {
                         featureType: "poi",
                         elementType: "labels",
-                        stylers: [{ visibility: "on" }]
+                        stylers: [{ visibility: "off" }]
                     }
                 ],
                 mapTypeControl: true,
                 streetViewControl: true,
                 fullscreenControl: true,
-                zoomControl: true
+                zoomControl: true,
+                // Disable auto-centering on mobile
+                disableDoubleClickZoom: false,
+                gestureHandling: 'auto'
             });
 
             infoWindow = new google.maps.InfoWindow({
@@ -476,6 +571,7 @@
             });
             
             document.getElementById("get-location").addEventListener("click", getLocation);
+            document.getElementById("refresh-location").addEventListener("click", refreshLocation);
             document.getElementById("stop-tracking").addEventListener("click", stopTracking);
             document.getElementById("clear-directions").addEventListener("click", clearDirections);
             document.getElementById("travel-mode").addEventListener("change", function() {
@@ -503,13 +599,17 @@
         }
 
         function updateTrackingButton() {
-            const button = document.getElementById("get-location");
+            const getButton = document.getElementById("get-location");
+            const refreshButton = document.getElementById("refresh-location");
+            
             if (isTracking) {
-                button.innerHTML = "Tracking Location...";
-                button.style.background = "linear-gradient(135deg, #ff9800, #f57c00)";
+                getButton.innerHTML = "Location Found";
+                getButton.style.background = "linear-gradient(135deg, #4caf50, #81c784)";
+                refreshButton.style.display = "block";
             } else {
-                button.innerHTML = "Get My Location";
-                button.style.background = "linear-gradient(135deg, #34a853, #4caf50)";
+                getButton.innerHTML = "Get My Location";
+                getButton.style.background = "linear-gradient(135deg, #34a853, #4caf50)";
+                refreshButton.style.display = "none";
             }
         }
 
@@ -582,29 +682,15 @@
 
         function getLocation() {
             if (navigator.geolocation) {
-                if (watchId) {
-                    stopTracking();
-                    return;
-                }
+                showNotification("Getting your location...", "info");
 
-                isTracking = true;
-                updateTrackingButton();
-                showNotification("Getting high-accuracy GPS location...", "info");
-
-                // Enhanced GPS options for better accuracy
-                const highAccuracyOptions = {
+                // Use single position request instead of continuous tracking
+                const options = {
                     enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 60000 // Increased timeout for GPS fix
+                    maximumAge: 30000, // Allow 30 seconds old location
+                    timeout: 15000
                 };
 
-                const fallbackOptions = {
-                    enableHighAccuracy: false,
-                    maximumAge: 60000, // Allow 1-minute old cached location
-                    timeout: 10000
-                };
-
-                // Try high accuracy first, fallback if needed
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const accuracy = position.coords.accuracy;
@@ -662,91 +748,79 @@
                             }
                         }
 
-                        map.panTo(userLocation);
+                        // Only pan to location on initial get, not on refresh
+                        if (!isTracking) {
+                            map.panTo(userLocation);
+                        }
 
-                        // Enhanced watch position with accuracy filtering
-                        watchId = navigator.geolocation.watchPosition(
-                            (position) => {
-                                const newAccuracy = position.coords.accuracy;
-                                const newLocation = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude,
-                                };
-
-                                // Only update if accuracy is reasonable or better than before
-                                if (newAccuracy <= 100) {
-                                    userMarker.setPosition(newLocation);
-                                    userMarker.setTitle(`Your Location (±${Math.round(newAccuracy)}m accuracy)`);
-                                    
-                                    if (userMarker.accuracyCircle) {
-                                        userMarker.accuracyCircle.setCenter(newLocation);
-                                        userMarker.accuracyCircle.setRadius(newAccuracy);
-                                    }
-
-                                    if (lastDestination) {
-                                        calculateAndDisplayRoute(newLocation, lastDestination);
-                                    }
-                                }
-                            },
-                            (error) => {
-                                console.error("Error tracking location:", error);
-                                showNotification("GPS tracking error - trying fallback method", "warning");
-                            },
-                            highAccuracyOptions
-                        );
+                        isTracking = true;
+                        updateTrackingButton();
                     },
                     (error) => {
-                        // Fallback to less accurate but faster method
-                        console.log("High accuracy failed, trying fallback...");
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                const userLocation = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude,
-                                };
-
-                                if (!userMarker) {
-                                    userMarker = new google.maps.Marker({
-                                        position: userLocation,
-                                        map: map,
-                                        title: "Your Location (Network-based)",
-                                        icon: {
-                                            url: "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-                                            scaledSize: new google.maps.Size(24, 24)
-                                        }
-                                    });
-                                }
-
-                                map.panTo(userLocation);
-                                showNotification("Location found using network (less accurate)", "warning");
-                            },
-                            (fallbackError) => {
-                                isTracking = false;
-                                updateTrackingButton();
-                                let errorMessage = "Error getting your location: ";
-                                switch(fallbackError.code) {
-                                    case fallbackError.PERMISSION_DENIED:
-                                        errorMessage += "Permission denied. Please enable location access.";
-                                        break;
-                                    case fallbackError.POSITION_UNAVAILABLE:
-                                        errorMessage += "Location unavailable. Try moving outdoors.";
-                                        break;
-                                    case fallbackError.TIMEOUT:
-                                        errorMessage += "Location request timed out. Try again.";
-                                        break;
-                                    default:
-                                        errorMessage += "Unknown error occurred.";
-                                        break;
-                                }
-                                showNotification(errorMessage, "error");
-                            },
-                            fallbackOptions
-                        );
+                        let errorMessage = "Error getting your location: ";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += "Permission denied. Please enable location access.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += "Location unavailable. Try moving outdoors.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += "Location request timed out. Try again.";
+                                break;
+                            default:
+                                errorMessage += "Unknown error occurred.";
+                                break;
+                        }
+                        showNotification(errorMessage, "error");
+                        isTracking = false;
+                        updateTrackingButton();
                     },
-                    highAccuracyOptions
+                    options
                 );
             } else {
                 showNotification("Geolocation is not supported by this browser.", "error");
+            }
+        }
+
+        function refreshLocation() {
+            if (navigator.geolocation && userMarker) {
+                showNotification("Refreshing your location...", "info");
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    maximumAge: 0, // Force fresh location
+                    timeout: 15000
+                };
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const accuracy = position.coords.accuracy;
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+
+                        userMarker.setPosition(userLocation);
+                        userMarker.setTitle(`Your Location (±${Math.round(accuracy)}m accuracy)`);
+                        
+                        if (userMarker.accuracyCircle) {
+                            userMarker.accuracyCircle.setCenter(userLocation);
+                            userMarker.accuracyCircle.setRadius(accuracy);
+                        }
+
+                        // Update directions if there's a destination
+                        if (lastDestination) {
+                            calculateAndDisplayRoute(userLocation, lastDestination);
+                        }
+
+                        showNotification("Location updated successfully!", "success");
+                    },
+                    (error) => {
+                        showNotification("Failed to refresh location. Try again.", "error");
+                    },
+                    options
+                );
             }
         }
 
@@ -755,10 +829,15 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
-            if (userMarker && userMarker.accuracyCircle) {
-                userMarker.accuracyCircle.setMap(null);
+            if (userMarker) {
+                userMarker.setMap(null);
+                if (userMarker.accuracyCircle) {
+                    userMarker.accuracyCircle.setMap(null);
+                }
+                userMarker = null;
             }
             isTracking = false;
+            autoUpdateEnabled = false;
             updateTrackingButton();
             clearDirections();
             showNotification("Location tracking stopped.", "info");
@@ -826,6 +905,26 @@
             });
         }
 
+        function togglePanels() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('controls').classList.toggle('collapsed');
+        }
+        
+        function toggleSearchSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const controls = document.getElementById('controls');
+            // Show sidebar, hide controls
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+                controls.classList.add('collapsed');
+                // Focus the search bar if present
+                const search = document.getElementById('search');
+                if (search) search.focus();
+            } else {
+                sidebar.classList.add('collapsed');
+            }
+        }
+        
         window.calculateAndDisplayRoute = calculateAndDisplayRoute;
     </script>
     

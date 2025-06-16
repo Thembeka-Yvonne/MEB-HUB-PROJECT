@@ -1,4 +1,4 @@
-
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from login.models import Admin
@@ -48,6 +48,19 @@ def add_event(request):
         s_time = datetime.strptime(start_time, '%H:%M')
         e_time = datetime.strptime(end_time, '%H:%M')
         image_data=image_file.read() #read binary file so it can be stored in the database
+
+        # Check for duplicates (based on title, date, location, start_time)
+        duplicate_event = Event.objects.filter(
+            Q(title__iexact=title),
+            Q(location__iexact=location),
+            date=date,
+            start_time=s_time.time(),
+            end_time = e_time.time()
+        ).exists()
+
+        if duplicate_event:
+            messages.warning(request, "Event already exists.")
+            return redirect('add_event')  # Or return to the same page
 
         if image_file:
             event = Event(
@@ -308,6 +321,15 @@ def rsvp_event(request):
         guest_surname = request.POST['surname']
         email = request.POST['email']
         done_at=timezone.now()
+
+        duplicate_rsvp = RSVP.objects.filter(
+            event_id=event_id,
+            guest_studentnumber=guest_student_no
+        ).exists()
+
+        if duplicate_rsvp:
+            messages.warning(request, "RSVP already done.")
+            return redirect('events_home')  # Or return to the same page
 
 
         if is_valid_email(email): #check if the email is valid
